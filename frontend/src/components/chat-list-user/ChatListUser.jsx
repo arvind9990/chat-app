@@ -36,7 +36,7 @@ function ChatListUser({
   const getAllChats = () => {
     axios
       .get(
-        `http://localhost:3000/api/chats/get-all-messages/${loggedInUser._id}/${id}`
+        `https://chat-app-cpw1.onrender.com`
       )
       .then((res) => {
         if (res.data.ok) {
@@ -54,7 +54,7 @@ function ChatListUser({
   const handleDelete = (e) => {
     e.stopPropagation();
     axios
-      .delete(`http://localhost:3000/api/users/delete-user/${id}`)
+      .delete(`https://chat-app-cpw1.onrender.com`)
       .then((res) => {
         if (res.data.ok) {
           toast.success("User removed", { autoClose: 1200 });
