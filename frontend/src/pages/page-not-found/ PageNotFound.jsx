@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-function Pagenotfound() {
+function PageNotFound.jsx() {
   return (
     <div style={{ width: "1200px", margin: "30px auto", textAlign: "center" }}>
       <Link to="/" style={{ fontSize: "32px" }}>
@@ -18,4 +18,4 @@ function Pagenotfound() {
   );
 }
 
-export default Pagenotfound;
+export default PageNotFound.jsx;
