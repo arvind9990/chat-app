@@ -5,7 +5,7 @@ const cors = require("cors");
 const { createServer } = require("http");
 const { Server } = require("socket.io");
 
-// ✅ CORRECT PATHS (IMPORTANT)
+// ✅ CORRECT PATHS (NO backend here)
 const createMongodbConnection = require("./config/mongodbConnection");
 
 const AuthRoute = require("./routes/authRoute");
@@ -41,24 +41,19 @@ const io = new Server(server, {
 io.on("connection", (socket) => {
   console.log("User Connected");
 
-  // Join room
   socket.on("join-room", (userId) => {
     if (!onlineUsers.includes(userId)) {
       onlineUsers.push(userId);
     }
-
     io.emit("online", onlineUsers);
-
     if (userId) socket.join(userId);
   });
 
-  // Offline
   socket.on("offline", (id) => {
     const filteredIds = onlineUsers.filter((userId) => userId != id);
     io.emit("offline", filteredIds);
   });
 
-  // Send message
   socket.on("send-message", (data) => {
     if (data) {
       io.to(data.userIds[0])
@@ -67,14 +62,12 @@ io.on("connection", (socket) => {
     }
   });
 
-  // Seen message
   socket.on("messages-seen", (data) => {
     io.to(data.senderId).emit("messages-seen-ack", {
       seenBy: data.receiverId,
     });
   });
 
-  // Call features
   socket.on("call-user", (data) => {
     io.to(data.to).emit("incoming-call", data);
   });
@@ -99,8 +92,10 @@ io.on("connection", (socket) => {
 const PORT = process.env.PORT || 5000;
 
 // ✅ CONNECT DB FIRST
-createMongodbConnection().then(() => {
-  server.listen(PORT, () => {
-    console.log(`🚀 Server Started on ${PORT}`);
-  });
-});
+createMongodbConnection()
+  .then(() => {
+    server.listen(PORT, () => {
+      console.log(`🚀 Server Started on ${PORT}`);
+    });
+  })
+  .catch((err) => console.log(err));
