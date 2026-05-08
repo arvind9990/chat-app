@@ -37,7 +37,7 @@ function ChatAreaBody({ socket }) {
 
     axios
       .put(
-        `http://localhost:3000/api/chats/mark-seen/${loggedInUser._id}/${startChatUserData.id}`
+        `https://chat-app-cpw1.onrender.com`
       )
       .then(() => {
         // Notify sender via socket that messages were seen
@@ -80,7 +80,7 @@ function ChatAreaBody({ socket }) {
 
   const handleDelete = (messageId) => {
     axios
-      .delete(`http://localhost:3000/api/chats/delete-message/${messageId}`)
+      .delete(`https://chat-app-cpw1.onrender.com`)
       .then((res) => {
         if (res.data.ok) {
           setAllChats((prev) =>
