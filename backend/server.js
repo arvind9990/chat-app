@@ -5,11 +5,12 @@ const cors = require("cors");
 const { createServer } = require("http");
 const { Server } = require("socket.io");
 
-const createMongodbConnection = require("./config/mongodbConnection.js");
+// ✅ FIXED PATH (IMPORTANT)
+const createMongodbConnection = require("./backend/config/mongodbConnection");
 
-const AuthRoute = require("./routes/authRoute.js");
-const UserRoute = require("./routes/userRoute.js");
-const ChatRoute = require("./routes/chatRoute.js");
+const AuthRoute = require("./backend/routes/authRoute");
+const UserRoute = require("./backend/routes/userRoute");
+const ChatRoute = require("./backend/routes/chatRoute");
 
 const app = express();
 
@@ -40,26 +41,21 @@ const io = new Server(server, {
 io.on("connection", (socket) => {
   console.log("User Connected");
 
-  // Online/offline
   socket.on("join-room", (userId) => {
-    onlineUsers.push(userId);
+    if (!onlineUsers.includes(userId)) {
+      onlineUsers.push(userId);
+    }
 
     io.emit("online", onlineUsers);
 
-    if (userId) {
-      socket.join(userId);
-    }
+    if (userId) socket.join(userId);
   });
 
   socket.on("offline", (id) => {
-    const filteredIds = onlineUsers.filter(
-      (userId) => userId != id
-    );
-
+    const filteredIds = onlineUsers.filter((userId) => userId != id);
     io.emit("offline", filteredIds);
   });
 
-  // Chat messages
   socket.on("send-message", (data) => {
     if (data) {
       io.to(data.userIds[0])
@@ -68,17 +64,12 @@ io.on("connection", (socket) => {
     }
   });
 
-  // Seen messages
   socket.on("messages-seen", (data) => {
-    io.to(data.senderId).emit(
-      "messages-seen-ack",
-      {
-        seenBy: data.receiverId,
-      }
-    );
+    io.to(data.senderId).emit("messages-seen-ack", {
+      seenBy: data.receiverId,
+    });
   });
 
-  // Call features
   socket.on("call-user", (data) => {
     io.to(data.to).emit("incoming-call", data);
   });
@@ -87,8 +78,8 @@ io.on("connection", (socket) => {
     io.to(data.to).emit("call-accepted", data);
   });
 
-  socket.on("call-rejected", (data) => {
-    io.to(data.to).emit("call-rejected");
+  socket.on("call-rejected", () => {
+    io.emit("call-rejected");
   });
 
   socket.on("call-ended", (data) => {
@@ -100,10 +91,11 @@ io.on("connection", (socket) => {
   });
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5000;
 
-server.listen(PORT, () => {
-  console.log(`Server Started on ${PORT}`);
-
-  createMongodbConnection();
+// ✅ CONNECT DB FIRST
+createMongodbConnection().then(() => {
+  server.listen(PORT, () => {
+    console.log(`🚀 Server Started on ${PORT}`);
+  });
 });

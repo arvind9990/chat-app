@@ -1,14 +1,15 @@
 const mongoose = require("mongoose");
-const mongodbServerUrl = "mongodb://localhost:27017/chatappDB";
+
+const mongodbServerUrl = process.env.MONGO_URL;
+
 function createMongodbConnection() {
-  //Connect with Mongodb Server and Database
-  mongoose
+  return mongoose
     .connect(mongodbServerUrl)
     .then(() => {
-      console.log(" Connected with Mongodb Server & chatappDB Database");
+      console.log("✅ Connected with MongoDB");
     })
-    .catch(() => {
-      console.log("Failed to Connect with Mongodb Server");
+    .catch((err) => {
+      console.log("❌ MongoDB Connection Failed:", err.message);
     });
 }
 
