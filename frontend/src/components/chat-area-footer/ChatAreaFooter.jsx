@@ -36,7 +36,7 @@ function ChatAreaFooter({ socket }) {
     const msgText = messageRef.current.value;
 
     axios
-      .post("http://localhost:3000/api/chats/new-message", {
+      .post("https://chat-app-cpw1.onrender.com", {
         userIds: [loggedInUser._id, startChatUserData.id],
         message: msgText,
         senderId: loggedInUser._id,
@@ -75,7 +75,7 @@ function ChatAreaFooter({ socket }) {
     formData.append("senderId", loggedInUser._id);
 
     axios
-      .post("http://localhost:3000/api/chats/send-image", formData, {
+      .post("https://chat-app-cpw1.onrender.com", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       })
       .then((res) => {
