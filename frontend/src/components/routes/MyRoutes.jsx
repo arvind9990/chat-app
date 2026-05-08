@@ -3,7 +3,7 @@ import { Route, Routes, Navigate } from "react-router-dom";
 import Home from "../../pages/home/Home.jsx";
 import Signin from "../../pages/sign-in/Signin.jsx";
 import Signup from "../../pages/sign-up/Signup.jsx";
-import Pagenotfound from "../../pages/page-not-found/Pagenotfound.jsx";
+import PageNotFound from "../../pages/page-not-found/PageNotFound"; // ✅ FIXED
 import Profile from "../../pages/profile/Profile.jsx";
 import UpdateProfile from "../../pages/profile/UpdateProfile.jsx";
 
@@ -11,6 +11,7 @@ function MyRoutes({ isLoggedIn }) {
   return (
     <Routes>
       <Route path={"/"} element={isLoggedIn ? <Home /> : <Signin />} />
+
       <Route
         path={"/profile"}
         element={isLoggedIn ? <Profile /> : <Signin />}
@@ -20,11 +21,13 @@ function MyRoutes({ isLoggedIn }) {
         path={"/update-profile"}
         element={isLoggedIn ? <UpdateProfile /> : <Signin />}
       />
+
       <Route
         path={"/sign-up"}
         element={isLoggedIn ? <Navigate to="/" /> : <Signup />}
       />
-      <Route path="*" element={<Pagenotfound />} />
+
+      <Route path="*" element={<PageNotFound />} /> {/* ✅ FIXED */}
     </Routes>
   );
 }
