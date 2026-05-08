@@ -28,7 +28,7 @@ export function signup(
 
     fileReader.onloadend = () => {
       axios
-        .post("http://localhost:3000/api/auth/sign-up", {
+        .post("https://chat-app-cpw1.onrender.com", {
           ...data,
           file: fileReader.result,
         })
