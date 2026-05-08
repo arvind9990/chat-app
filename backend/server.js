@@ -5,12 +5,12 @@ const cors = require("cors");
 const { createServer } = require("http");
 const { Server } = require("socket.io");
 
-// ✅ FIXED PATH (IMPORTANT)
-const createMongodbConnection = require("./backend/config/mongodbConnection");
+// ✅ CORRECT PATHS (IMPORTANT)
+const createMongodbConnection = require("./config/mongodbConnection");
 
-const AuthRoute = require("./backend/routes/authRoute");
-const UserRoute = require("./backend/routes/userRoute");
-const ChatRoute = require("./backend/routes/chatRoute");
+const AuthRoute = require("./routes/authRoute");
+const UserRoute = require("./routes/userRoute");
+const ChatRoute = require("./routes/chatRoute");
 
 const app = express();
 
@@ -41,6 +41,7 @@ const io = new Server(server, {
 io.on("connection", (socket) => {
   console.log("User Connected");
 
+  // Join room
   socket.on("join-room", (userId) => {
     if (!onlineUsers.includes(userId)) {
       onlineUsers.push(userId);
@@ -51,11 +52,13 @@ io.on("connection", (socket) => {
     if (userId) socket.join(userId);
   });
 
+  // Offline
   socket.on("offline", (id) => {
     const filteredIds = onlineUsers.filter((userId) => userId != id);
     io.emit("offline", filteredIds);
   });
 
+  // Send message
   socket.on("send-message", (data) => {
     if (data) {
       io.to(data.userIds[0])
@@ -64,12 +67,14 @@ io.on("connection", (socket) => {
     }
   });
 
+  // Seen message
   socket.on("messages-seen", (data) => {
     io.to(data.senderId).emit("messages-seen-ack", {
       seenBy: data.receiverId,
     });
   });
 
+  // Call features
   socket.on("call-user", (data) => {
     io.to(data.to).emit("incoming-call", data);
   });
