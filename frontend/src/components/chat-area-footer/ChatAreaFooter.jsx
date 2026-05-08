@@ -1,0 +1,150 @@
+import { useRef, useContext, useEffect, useState } from "react";
+import "./ChatAreaFooter.css";
+import axios from "axios";
+import { toast } from "react-toastify";
+import allChatContext from "../../context/allChatContext";
+import loggedInUserContext from "../../context/loggedInUserContext";
+import startChatContext from "../../context/startChatContext";
+import EmojiPicker from "emoji-picker-react";
+
+function ChatAreaFooter({ socket }) {
+  const messageRef = useRef(null);
+  const imageRef = useRef(null);
+  const [showEmoji, setShowEmoji] = useState(false);
+  const { loggedInUser } = useContext(loggedInUserContext);
+  const { startChatUserData } = useContext(startChatContext);
+  const { setAllChats } = useContext(allChatContext);
+
+  useEffect(() => {
+    socket.on("received-message", (data) => {
+      setAllChats((prevAllMessages) => {
+        if (prevAllMessages) {
+          return [...prevAllMessages, data];
+        } else {
+          return [data];
+        }
+      });
+    });
+  }, []);
+
+  const sendMessage = () => {
+    if (messageRef.current.value === "") {
+      toast.error("Please Enter the Message", { autoClose: 1500 });
+      return;
+    }
+
+    const msgText = messageRef.current.value;
+
+    axios
+      .post("http://localhost:3000/api/chats/new-message", {
+        userIds: [loggedInUser._id, startChatUserData.id],
+        message: msgText,
+        senderId: loggedInUser._id,
+      })
+      .then((res) => {
+        if (res.data.ok) {
+          const savedMessage = res.data.result;
+
+          // Emit with full saved message (has _id, createdAt, seen=false)
+          socket.emit("send-message", savedMessage);
+
+          // Add to local chat immediately
+          setAllChats((prev) =>
+            prev ? [...prev, savedMessage] : [savedMessage]
+          );
+
+          messageRef.current.value = "";
+          setShowEmoji(false);
+        } else {
+          throw Error(res.data.error);
+        }
+      })
+      .catch((error) => {
+        toast.error(error.message, { autoClose: 1500 });
+      });
+  };
+
+  const handleImageChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append("image", file);
+    formData.append("userId1", loggedInUser._id);
+    formData.append("userId2", startChatUserData.id);
+    formData.append("senderId", loggedInUser._id);
+
+    axios
+      .post("http://localhost:3000/api/chats/send-image", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      })
+      .then((res) => {
+        if (res.data.ok) {
+          socket.emit("send-message", res.data.result);
+          setAllChats((prevAllMessages) => {
+            if (prevAllMessages) {
+              return [...prevAllMessages, res.data.result];
+            } else {
+              return [res.data.result];
+            }
+          });
+          toast.success("Image Sent!", { autoClose: 1000 });
+        } else {
+          throw Error(res.data.error);
+        }
+      })
+      .catch((error) => {
+        toast.error(error.message, { autoClose: 1000 });
+      });
+  };
+
+  return (
+    <div className="chat-area-footer">
+      <div className="emoji">
+        <EmojiPicker
+          onEmojiClick={(event) => {
+            messageRef.current.value = messageRef.current.value + event.emoji;
+          }}
+          open={showEmoji}
+          width={800}
+          style={{
+            borderRadius: "12px",
+            boxShadow: "0 8px 24px rgba(0,0,0,0.6)",
+            padding: "8px",
+            margin: "auto",
+          }}
+        />
+      </div>
+      <input
+        ref={messageRef}
+        type="text"
+        placeholder="enter message"
+        onKeyDown={(e) => {
+          if (e.key === "Enter") sendMessage();
+        }}
+      />
+
+      <input
+        type="file"
+        accept="image/*"
+        ref={imageRef}
+        style={{ display: "none" }}
+        onChange={handleImageChange}
+      />
+
+      <div className="chat-area-footer-icons">
+        <i
+          className="bi bi-image-fill"
+          onClick={() => imageRef.current.click()}
+        ></i>
+        <i
+          className="bi bi-emoji-heart-eyes-fill"
+          onClick={() => setShowEmoji(!showEmoji)}
+        ></i>
+        <i className="bi bi-send-check" onClick={sendMessage}></i>
+      </div>
+    </div>
+  );
+}
+
+export default ChatAreaFooter;

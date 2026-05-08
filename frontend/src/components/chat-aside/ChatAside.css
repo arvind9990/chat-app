@@ -1,0 +1,11 @@
+.aside {
+  /* box-shadow: 0 0 10px black; */
+  display: grid;
+  grid-template-rows: 15% 85%;
+  overflow-y: hidden;
+}
+
+.chat-list {
+  overflow-y: auto;
+  scrollbar-width: thin;
+}

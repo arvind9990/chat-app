@@ -1,0 +1,5 @@
+.chat-area {
+  display: grid;
+  grid-template-rows: 15% 76% 9%;
+  overflow-y: auto;
+}
