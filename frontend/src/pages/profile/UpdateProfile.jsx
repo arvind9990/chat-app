@@ -17,7 +17,7 @@ function UpdateProfile() {
     delete updatedData._id;
     axios
       .put(
-        `http://localhost:3000/api/users/update-user/${loggedInUser._id}`,
+        `https://chat-app-cpw1.onrender.com`,
         updatedData,
       )
       .then((res) => {
