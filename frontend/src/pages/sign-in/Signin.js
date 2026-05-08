@@ -1,5 +1,5 @@
 import axios from "axios";
-const loginUrl = "http://localhost:3000/api/auth/sign-in";
+const loginUrl = "https://chat-app-cpw1.onrender.com";
 import { toast } from "react-toastify";
 
 export function signin(
