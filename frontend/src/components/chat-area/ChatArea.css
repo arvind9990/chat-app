@@ -1,11 +1,15 @@
 .chat-area {
   display: grid;
   grid-template-rows: 60px 1fr 55px;
-  overflow: hidden;
   height: 100%;
+  overflow: hidden;
 }
 
-/* Tablet */
+.chat-area > *:nth-child(2) {
+  overflow-y: auto;
+  min-height: 0;
+}
+
 @media (max-width: 768px) {
   .chat-area {
     grid-template-rows: 60px 1fr 55px;
@@ -13,7 +17,6 @@
   }
 }
 
-/* Mobile */
 @media (max-width: 480px) {
   .chat-area {
     grid-template-rows: 60px 1fr 55px;

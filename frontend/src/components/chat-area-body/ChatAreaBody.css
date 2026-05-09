@@ -3,6 +3,7 @@
   padding: 10px;
   display: flex;
   flex-direction: column;
+  min-height: 0;
   scrollbar-width: thin;
   scrollbar-color: darkgreen #e9f3ec;
 }
