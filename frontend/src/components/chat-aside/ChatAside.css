@@ -8,23 +8,25 @@
 
 .chat-list {
   flex: 1;
-  overflow-y: auto;
+  overflow-y: scroll;
   min-height: 0;
-  scrollbar-width: thin;
+  scrollbar-width: auto;
   scrollbar-color: darkgreen #e9f3ec;
 }
 
 .chat-list::-webkit-scrollbar {
-  width: 6px;
+  width: 8px;
 }
 
 .chat-list::-webkit-scrollbar-track {
   background: #e9f3ec;
+  border-radius: 10px;
 }
 
 .chat-list::-webkit-scrollbar-thumb {
   background-color: darkgreen;
   border-radius: 10px;
+  border: 2px solid #e9f3ec;
 }
 
 @media (max-width: 768px) {
