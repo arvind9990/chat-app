@@ -1,15 +1,15 @@
 .chat-list-user-container {
   height: 70px;
-  width: 80%;
-  margin: 10px 10px;
+  width: 90%;
+  margin: 8px auto;
   box-shadow: 0 0 1px black;
   padding: 10px 0px;
   display: grid;
-  justify-self: flex-end;
   grid-template-columns: 30% 70%;
-  /* background-color: white; */
   border-top-left-radius: 10px;
   border-bottom-right-radius: 10px;
+  cursor: pointer;
+  box-sizing: border-box;
 }
 
 .chat-list-user-image {
@@ -17,23 +17,38 @@
   justify-content: center;
   align-items: center;
 }
+
 .chat-list-user-image img {
   border-radius: 50%;
-  /* box-shadow: 0 0 10px black; */
-  /* color: rgb(73, 72, 72); */
 }
+
 .chat-list-user-details {
   display: grid;
   grid-template-rows: 1fr 1fr;
+  overflow: hidden;
 }
+
 .chat-list-user-details div {
   display: flex;
   justify-content: flex-start;
   align-items: center;
-  /* color: white; */
 }
+
 .chat-list-user-details h3 {
   text-transform: capitalize;
+  font-size: 14px;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chat-list-user-details p {
+  font-size: 12px;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 #profile {
@@ -41,7 +56,6 @@
   height: 50px;
   box-shadow: 0 0 10px black;
   border-radius: 50%;
-  /* background-color: darkgreen; */
   color: white;
   display: flex;
   justify-content: center;
@@ -50,7 +64,9 @@
   font-size: 19px;
   letter-spacing: 3px;
   position: relative;
+  flex-shrink: 0;
 }
+
 #mode {
   width: 11px;
   height: 11px;
@@ -59,4 +75,54 @@
   position: absolute;
   bottom: -1px;
   right: 3px;
+}
+
+/* Tablet */
+@media (max-width: 768px) {
+  .chat-list-user-container {
+    height: 60px;
+    width: 95%;
+  }
+
+  .chat-list-user-details h3 {
+    font-size: 13px;
+  }
+
+  .chat-list-user-details p {
+    font-size: 11px;
+  }
+
+  #profile {
+    width: 42px;
+    height: 42px;
+    font-size: 16px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+  .chat-list-user-container {
+    height: 55px;
+    width: 95%;
+    margin: 5px auto;
+  }
+
+  .chat-list-user-details h3 {
+    font-size: 12px;
+  }
+
+  .chat-list-user-details p {
+    font-size: 10px;
+  }
+
+  #profile {
+    width: 38px;
+    height: 38px;
+    font-size: 14px;
+  }
+
+  #mode {
+    width: 9px;
+    height: 9px;
+  }
 }

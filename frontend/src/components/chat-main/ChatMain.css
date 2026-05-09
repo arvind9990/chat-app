@@ -3,3 +3,18 @@
   display: grid;
   grid-template-columns: 30% 70%;
 }
+
+/* Tablet */
+@media (max-width: 768px) {
+  .chat-main {
+    grid-template-columns: 40% 60%;
+  }
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+  .chat-main {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+  }
+}

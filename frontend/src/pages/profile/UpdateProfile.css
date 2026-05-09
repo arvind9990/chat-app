@@ -1,21 +1,27 @@
 .updateprofile-container {
-  height: 100vh;
-  background-image:
-    linear-gradient(45deg, rgba(0, 0, 0, 0.8), rgba(0, 100, 0, 0.8)),
+  min-height: 100vh;
+  background-image: linear-gradient(
+      45deg,
+      rgba(0, 0, 0, 0.8),
+      rgba(0, 100, 0, 0.8)
+    ),
     url("https://png.pngtree.com/thumb_back/fw800/background/20230913/pngtree-cell-phone-and-paper-speech-bubbles-next-to-blue-surface-of-image_13274584.jpg");
   background-repeat: no-repeat;
-  background-size: 100% 100%;
+  background-size: cover;
   display: flex;
   justify-content: center;
   align-items: center;
+  padding: 20px;
+  box-sizing: border-box;
 }
 
 .updateprofile-form {
-  width: 400px;
-
+  width: 100%;
+  max-width: 400px;
   background-color: white;
   border-radius: 10px;
-  padding: 30px;
+  padding: 30px 20px;
+  box-sizing: border-box;
 }
 
 .updateprofile-form h2 {
@@ -33,19 +39,22 @@
 .updateprofile-form input {
   width: 100%;
   background-color: #efefef;
-  /* margin-bottom: 15px; */
   border: none;
   outline: none;
   padding: 15px 20px;
   border-radius: 4px;
+  box-sizing: border-box;
+  font-size: 15px;
 }
 
 .updateprofile-form span {
   color: red;
+  font-size: 12px;
 }
+
 .updateprofile-form button {
   background-color: darkgreen;
-  width: 98%;
+  width: 100%;
   color: white;
   border: none;
   outline: none;
@@ -53,6 +62,8 @@
   border-radius: 5px;
   margin-top: 7px;
   font-size: 16px;
+  cursor: pointer;
+  box-sizing: border-box;
 }
 
 #gender {
@@ -61,4 +72,65 @@
   border: 0;
   outline: 0;
   background-color: #efefef;
+  border-radius: 4px;
+  font-size: 15px;
+  box-sizing: border-box;
+}
+
+/* Tablet */
+@media (max-width: 768px) {
+  .updateprofile-form {
+    padding: 25px 18px;
+  }
+
+  .updateprofile-form h2 {
+    font-size: 22px;
+  }
+
+  .updateprofile-form input {
+    padding: 12px 15px;
+    font-size: 14px;
+  }
+
+  .updateprofile-form button {
+    padding: 12px;
+    font-size: 15px;
+  }
+
+  #gender {
+    padding: 12px;
+    font-size: 14px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+  .updateprofile-container {
+    padding: 15px;
+    align-items: flex-start;
+    padding-top: 40px;
+  }
+
+  .updateprofile-form {
+    padding: 20px 15px;
+  }
+
+  .updateprofile-form h2 {
+    font-size: 20px;
+  }
+
+  .updateprofile-form input {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+
+  .updateprofile-form button {
+    padding: 10px;
+    font-size: 14px;
+  }
+
+  #gender {
+    padding: 10px;
+    font-size: 13px;
+  }
 }
