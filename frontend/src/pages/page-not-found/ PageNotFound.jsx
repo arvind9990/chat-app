@@ -1,5 +1,7 @@
+// PageNotFound Component
 import React from "react";
 import { Link } from "react-router-dom";
+
 function PageNotFound() {
   return (
     <div style={{ width: "1200px", margin: "30px auto", textAlign: "center" }}>
