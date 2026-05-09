@@ -4,6 +4,30 @@
   grid-template-columns: 30% 70%;
 }
 
+.mobile-chat-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+}
+
+.back-btn {
+  background: darkgreen;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  flex-shrink: 0;
+}
+
+.back-btn:hover {
+  background: green;
+}
+
 /* Tablet */
 @media (max-width: 768px) {
   .chat-main {
