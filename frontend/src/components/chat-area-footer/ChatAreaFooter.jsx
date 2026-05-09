@@ -45,6 +45,7 @@ function ChatAreaFooter({ socket }) {
         if (res.data.ok) {
           const savedMessage = res.data.result;
           socket.emit("send-message", savedMessage);
+          setAllChats((prev) => prev ? [...prev, savedMessage] : [savedMessage]);
           messageRef.current.value = "";
           setShowEmoji(false);
         } else {
@@ -71,6 +72,7 @@ function ChatAreaFooter({ socket }) {
       .then((res) => {
         if (res.data.ok) {
           socket.emit("send-message", res.data.result);
+          setAllChats((prev) => prev ? [...prev, res.data.result] : [res.data.result]);
           toast.success("Image Sent!", { autoClose: 1000 });
         } else {
           throw Error(res.data.error);
