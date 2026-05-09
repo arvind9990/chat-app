@@ -1,7 +1,7 @@
 .aside {
   display: grid;
-  grid-template-rows: 15% 85%;
-  overflow-y: hidden;
+  grid-template-rows: 70px 1fr;
+  overflow: hidden;
   height: 100%;
   border-right: 1px solid #e0e0e0;
 }
@@ -11,23 +11,12 @@
   scrollbar-width: thin;
 }
 
-/* Tablet */
+/* Tablet + Mobile */
 @media (max-width: 768px) {
   .aside {
-    grid-template-rows: 12% 88%;
-  }
-}
-
-/* Mobile */
-@media (max-width: 480px) {
-  .aside {
-    grid-template-rows: 60px 1fr;
-    height: 250px;
+    grid-template-rows: 70px 1fr;
+    height: 100%;
+    width: 100%;
     border-right: none;
-    border-bottom: 1px solid #e0e0e0;
-  }
-
-  .chat-list {
-    overflow-y: auto;
   }
 }

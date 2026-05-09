@@ -1,8 +1,8 @@
 .home {
-  height: 100vh;
+  height: 100dvh;
   width: 100vw;
   display: grid;
-  grid-template-rows: 13% 87%;
+  grid-template-rows: 60px 1fr;
   background-color: #e9f3ec;
   position: fixed;
   overflow: hidden;
@@ -11,7 +11,7 @@
 /* Tablet */
 @media (max-width: 768px) {
   .home {
-    grid-template-rows: 10% 90%;
+    grid-template-rows: 60px 1fr;
   }
 }
 
@@ -19,7 +19,5 @@
 @media (max-width: 480px) {
   .home {
     grid-template-rows: 60px 1fr;
-    position: fixed;
-    overflow: hidden;
   }
 }
