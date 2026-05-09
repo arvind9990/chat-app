@@ -29,15 +29,13 @@ function ChatListUser({
 
   const startChat = () => {
     selectChatListComp(index);
-    setStartChatUserData({ username: username, email: email, id: id, file: file });
+    setStartChatUserData({ username, email, id, file });
     getAllChats();
   };
 
   const getAllChats = () => {
     axios
-      .get(
-        `https://chat-app-cpw1.onrender.com`
-      )
+      .get(`${import.meta.env.VITE_BACKEND_URL}/api/chats/${loggedInUser._id}/${id}`)
       .then((res) => {
         if (res.data.ok) {
           setAllChats(res.data.result);
@@ -54,7 +52,7 @@ function ChatListUser({
   const handleDelete = (e) => {
     e.stopPropagation();
     axios
-      .delete(`https://chat-app-cpw1.onrender.com`)
+      .delete(`${import.meta.env.VITE_BACKEND_URL}/api/users/${loggedInUser._id}/${id}`)
       .then((res) => {
         if (res.data.ok) {
           toast.success("User removed", { autoClose: 1200 });
@@ -97,7 +95,6 @@ function ChatListUser({
                 backgroundColor: onlineusers.includes(id) ? "green" : "red",
               }}
             ></div>
-            {/* ADD - Show user's actual profile image */}
             <img
               src={file || "https://cdn-icons-png.flaticon.com/512/4122/4122823.png"}
               alt={username}
@@ -121,10 +118,7 @@ function ChatListUser({
           <div>
             <p
               style={{
-                color:
-                  selectedChatListComp === index
-                    ? "white"
-                    : "rgba(116, 110, 110, 1)",
+                color: selectedChatListComp === index ? "white" : "rgba(116, 110, 110, 1)",
                 fontWeight: "bold",
                 fontStyle: "italic",
               }}

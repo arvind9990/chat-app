@@ -1,5 +1,6 @@
 import axios from "axios";
 import { toast } from "react-toastify";
+
 export function signup(
   usernameRef,
   passwordRef,
@@ -9,10 +10,7 @@ export function signup(
   navigate,
   fileRef,
 ) {
-  if (
-    !checkValidation(usernameRef, passwordRef, emailRef, cityRef, genderRef)
-  ) {
-    //create data object
+  if (!checkValidation(usernameRef, passwordRef, emailRef, cityRef, genderRef)) {
     var data = {
       username: usernameRef.current.value,
       password: passwordRef.current.value,
@@ -28,7 +26,7 @@ export function signup(
 
     fileReader.onloadend = () => {
       axios
-        .post("https://chat-app-cpw1.onrender.com", {
+        .post(`${import.meta.env.VITE_BACKEND_URL}/api/auth/signup`, {
           ...data,
           file: fileReader.result,
         })

@@ -13,7 +13,6 @@ const isImageUrl = (text) => {
   );
 };
 
-// Format timestamp to HH:MM
 const formatTime = (dateStr) => {
   const date = new Date(dateStr);
   return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
@@ -26,26 +25,22 @@ function ChatAreaBody({ socket }) {
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
   const bottomRef = useRef(null);
 
-  // Auto scroll to bottom on new messages
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [allChats]);
 
-  // Mark messages as seen when chat opens or new message arrives
   useEffect(() => {
     if (!startChatUserData || !loggedInUser) return;
 
     axios
       .put(
-        `https://chat-app-cpw1.onrender.com`
+        `${import.meta.env.VITE_BACKEND_URL}/api/chats/seen/${startChatUserData.id}`
       )
       .then(() => {
-        // Notify sender via socket that messages were seen
         socket.emit("messages-seen", {
           senderId: startChatUserData.id,
           receiverId: loggedInUser._id,
         });
-        // Update local state - mark all received messages as seen
         setAllChats((prev) =>
           prev
             ? prev.map((chat) =>
@@ -59,7 +54,6 @@ function ChatAreaBody({ socket }) {
       .catch(() => {});
   }, [startChatUserData, allChats?.length]);
 
-  // Listen for seen ack - update sent messages to double tick
   useEffect(() => {
     if (!socket) return;
     socket.on("messages-seen-ack", ({ seenBy }) => {
@@ -80,7 +74,7 @@ function ChatAreaBody({ socket }) {
 
   const handleDelete = (messageId) => {
     axios
-      .delete(`https://chat-app-cpw1.onrender.com`)
+      .delete(`${import.meta.env.VITE_BACKEND_URL}/api/chats/${messageId}`)
       .then((res) => {
         if (res.data.ok) {
           setAllChats((prev) =>
@@ -117,7 +111,6 @@ function ChatAreaBody({ socket }) {
               }
               style={{ position: "relative" }}
             >
-              {/* Message content */}
               {isImageUrl(singleChat.message) ? (
                 <img
                   src={singleChat.message}
@@ -128,7 +121,6 @@ function ChatAreaBody({ socket }) {
                 <span>{singleChat.message}</span>
               )}
 
-              {/* Timestamp + tick row */}
               <div
                 style={{
                   display: "flex",
@@ -138,7 +130,6 @@ function ChatAreaBody({ socket }) {
                   marginTop: "4px",
                 }}
               >
-                {/* Timestamp */}
                 <span
                   style={{
                     fontSize: "10px",
@@ -149,17 +140,14 @@ function ChatAreaBody({ socket }) {
                   {singleChat.createdAt ? formatTime(singleChat.createdAt) : ""}
                 </span>
 
-                {/* Single / Double tick - only for sender */}
                 {isSender && (
                   <span style={{ fontSize: "13px", lineHeight: 1 }}>
                     {singleChat.seen ? (
-                      // Double blue tick - seen
                       <svg width="18" height="11" viewBox="0 0 18 11" fill="none">
                         <path d="M1 5.5L4.5 9L10 2" stroke="#4FC3F7" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
                         <path d="M6 5.5L9.5 9L15 2" stroke="#4FC3F7" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
                       </svg>
                     ) : (
-                      // Single grey tick - sent not seen
                       <svg width="12" height="11" viewBox="0 0 12 11" fill="none">
                         <path d="M1 5.5L4.5 9L11 2" stroke="rgba(255,255,255,0.6)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
                       </svg>
@@ -168,7 +156,6 @@ function ChatAreaBody({ socket }) {
                 )}
               </div>
 
-              {/* Delete button */}
               {isSender && (
                 <span
                   onClick={() => setConfirmDeleteId(singleChat._id)}
@@ -196,7 +183,6 @@ function ChatAreaBody({ socket }) {
                 </span>
               )}
 
-              {/* Delete confirm modal */}
               {confirmDeleteId === singleChat._id && (
                 <div
                   style={{

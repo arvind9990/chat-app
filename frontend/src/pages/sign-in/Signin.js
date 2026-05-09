@@ -1,5 +1,4 @@
 import axios from "axios";
-const loginUrl = "https://chat-app-cpw1.onrender.com";
 import { toast } from "react-toastify";
 
 export function signin(
@@ -13,22 +12,18 @@ export function signin(
   const validationError = validateSignin(credentials, error, setError);
   if (!validationError) {
     axios
-      .post(loginUrl, credentials)
+      .post(`${import.meta.env.VITE_BACKEND_URL}/api/auth/signin`, credentials)
       .then((res) => {
         if (res.data.ok) {
           setLoggedInUser(res.data.user);
-          toast.success("User Logged In", {
-            autoClose: 1000,
-          });
+          toast.success("User Logged In", { autoClose: 1000 });
           login();
         } else {
           throw Error(res.data.error);
         }
       })
       .catch((error) => {
-        toast.error(error.message, {
-          autoClose: 1500,
-        });
+        toast.error(error.message, { autoClose: 1500 });
       });
   }
 }
@@ -36,30 +31,22 @@ export function signin(
 export function validateSignin({ email, password }, error, setError) {
   var anyErrors = true;
   if (email === "" && password === "") {
-    setError((prevState) => {
-      return {
-        ...prevState,
-        email: "Email is required",
-        password: "Password is required",
-      };
-    });
+    setError((prevState) => ({
+      ...prevState,
+      email: "Email is required",
+      password: "Password is required",
+    }));
   } else {
     if (email === "") {
-      // setError({ ...error, email: "---------" });
-
-      setError((prevState) => {
-        return {
-          ...prevState,
-          email: "Email is required",
-        };
-      });
+      setError((prevState) => ({
+        ...prevState,
+        email: "Email is required",
+      }));
     } else if (password === "") {
-      setError((prevState) => {
-        return {
-          ...prevState,
-          password: "Password is required",
-        };
-      });
+      setError((prevState) => ({
+        ...prevState,
+        password: "Password is required",
+      }));
     } else {
       anyErrors = false;
     }

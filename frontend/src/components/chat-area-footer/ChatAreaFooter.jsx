@@ -36,7 +36,7 @@ function ChatAreaFooter({ socket }) {
     const msgText = messageRef.current.value;
 
     axios
-      .post("https://chat-app-cpw1.onrender.com", {
+      .post(`${import.meta.env.VITE_BACKEND_URL}/api/chats`, {
         userIds: [loggedInUser._id, startChatUserData.id],
         message: msgText,
         senderId: loggedInUser._id,
@@ -44,15 +44,10 @@ function ChatAreaFooter({ socket }) {
       .then((res) => {
         if (res.data.ok) {
           const savedMessage = res.data.result;
-
-          // Emit with full saved message (has _id, createdAt, seen=false)
           socket.emit("send-message", savedMessage);
-
-          // Add to local chat immediately
           setAllChats((prev) =>
             prev ? [...prev, savedMessage] : [savedMessage]
           );
-
           messageRef.current.value = "";
           setShowEmoji(false);
         } else {
@@ -75,7 +70,7 @@ function ChatAreaFooter({ socket }) {
     formData.append("senderId", loggedInUser._id);
 
     axios
-      .post("https://chat-app-cpw1.onrender.com", formData, {
+      .post(`${import.meta.env.VITE_BACKEND_URL}/api/chats/image`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       })
       .then((res) => {
