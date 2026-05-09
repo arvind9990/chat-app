@@ -16,31 +16,24 @@ function ChatAreaHeader({ socket, onStartCall }) {
       <div className="leftHeaderPart">
         <img
           src={
-            startChatUserData && startChatUserData.file
+            startChatUserData?.file
               ? startChatUserData.file
               : "https://cdn-icons-png.flaticon.com/512/4122/4122823.png"
           }
-          alt={startChatUserData && startChatUserData.username}
-          width={50}
-          height={50}
-          style={{ borderRadius: "50%", objectFit: "cover", cursor: "pointer" }}
+          alt={startChatUserData?.username}
           onClick={() => setShowBigImage(true)}
         />
-        <h2>{startChatUserData && startChatUserData.username}</h2>
+        <h2>{startChatUserData?.username}</h2>
       </div>
 
       <div className="rightHeaderPart">
-        {/* Audio call button */}
         <i
           className="bi bi-telephone-inbound-fill"
-          style={{ cursor: "pointer", fontSize: "20px", marginRight: "12px" }}
           onClick={() => handleCall("audio")}
           title="Audio Call"
         ></i>
-        {/* Video call button */}
         <i
           className="bi bi-camera-video-fill"
-          style={{ cursor: "pointer", fontSize: "20px" }}
           onClick={() => handleCall("video")}
           title="Video Call"
         ></i>
@@ -62,11 +55,11 @@ function ChatAreaHeader({ socket, onStartCall }) {
         >
           <img
             src={
-              startChatUserData && startChatUserData.file
+              startChatUserData?.file
                 ? startChatUserData.file
                 : "https://cdn-icons-png.flaticon.com/512/4122/4122823.png"
             }
-            alt={startChatUserData && startChatUserData.username}
+            alt={startChatUserData?.username}
             style={{
               width: "300px",
               height: "300px",
