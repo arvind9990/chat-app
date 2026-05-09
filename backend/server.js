@@ -55,9 +55,8 @@ io.on("connection", (socket) => {
 
   socket.on("send-message", (data) => {
     if (data) {
-      io.to(data.userIds[0])
-        .to(data.userIds[1])
-        .emit("received-message", data);
+      const receiverId = data.userIds.find((id) => id !== data.senderId);
+      io.to(receiverId).emit("received-message", data);
     }
   });
 
