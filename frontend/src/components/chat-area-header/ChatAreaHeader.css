@@ -4,7 +4,8 @@
   align-items: center;
   border-bottom: 1px solid #b0a9a9;
   padding: 0 10px;
-  height: 100%;
+  height: 60px;
+  flex-shrink: 0;
 }
 
 .leftHeaderPart {
@@ -49,8 +50,11 @@
   cursor: pointer;
 }
 
-/* Tablet */
 @media (max-width: 768px) {
+  .chat-area-header {
+    height: 55px;
+  }
+
   .leftHeaderPart h2 {
     font-size: 14px;
     max-width: 120px;
@@ -67,9 +71,9 @@
   }
 }
 
-/* Mobile */
 @media (max-width: 480px) {
   .chat-area-header {
+    height: 50px;
     padding: 0 8px;
   }
 
