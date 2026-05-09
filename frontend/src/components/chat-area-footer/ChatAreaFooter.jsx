@@ -16,11 +16,17 @@ function ChatAreaFooter({ socket }) {
   const { setAllChats } = useContext(allChatContext);
 
   useEffect(() => {
-    socket.on("received-message", (data) => {
+    const handleReceived = (data) => {
       setAllChats((prevAllMessages) =>
         prevAllMessages ? [...prevAllMessages, data] : [data]
       );
-    });
+    };
+
+    socket.on("received-message", handleReceived);
+
+    return () => {
+      socket.off("received-message", handleReceived);
+    };
   }, []);
 
   const sendMessage = () => {
