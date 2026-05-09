@@ -10,7 +10,7 @@ export function signup(
   navigate,
   fileRef,
 ) {
-  if (!checkValidation(usernameRef, passwordRef, emailRef, cityRef, genderRef)) {
+  if (!checkValidation(usernameRef, passwordRef, emailRef, cityRef, fileRef)) {
     var data = {
       username: usernameRef.current.value,
       password: passwordRef.current.value,
@@ -52,7 +52,7 @@ export function signup(
   }
 }
 
-function checkValidation(userNameRef, passwordRef, emailRef, cityRef) {
+function checkValidation(userNameRef, passwordRef, emailRef, cityRef, fileRef) {
   var anyError = true;
 
   if (userNameRef.current.value === "") {
@@ -66,14 +66,15 @@ function checkValidation(userNameRef, passwordRef, emailRef, cityRef) {
     toast.error("Email is required");
   } else if (!emailRef.current.value.endsWith("@gmail.com")) {
     emailRef.current.style.border = "2px solid red";
-    toast.error("Only Gmail address allowed (@gmail.com)");
+    toast.error("Only Gmail allowed (@gmail.com)");
   } else if (cityRef.current.value === "") {
     cityRef.current.style.border = "2px solid red";
     toast.error("City is required");
+  } else if (!fileRef.current.files[0]) {
+    toast.error("Profile photo is required");
   } else {
     anyError = false;
   }
 
-  return anyError; 
-  
+  return anyError;
 }
