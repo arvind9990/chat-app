@@ -5,7 +5,6 @@ const cors = require("cors");
 const { createServer } = require("http");
 const { Server } = require("socket.io");
 
-// ✅ CORRECT PATHS (NO backend here)
 const createMongodbConnection = require("./config/mongodbConnection");
 
 const AuthRoute = require("./routes/authRoute");
@@ -16,7 +15,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: "*",
+    origin: "https://chat-app-1-cz6u.onrender.com",
     methods: ["GET", "POST", "PUT", "DELETE"],
   })
 );
@@ -33,7 +32,7 @@ const server = createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: "*",
+    origin: "https://chat-app-1-cz6u.onrender.com",
     methods: ["GET", "POST", "PUT", "DELETE"],
   },
 });
@@ -91,7 +90,6 @@ io.on("connection", (socket) => {
 
 const PORT = process.env.PORT || 5000;
 
-// ✅ CONNECT DB FIRST
 createMongodbConnection()
   .then(() => {
     server.listen(PORT, () => {
