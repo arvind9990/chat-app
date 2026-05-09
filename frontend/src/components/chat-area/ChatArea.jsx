@@ -1,34 +1,39 @@
-import React from "react";
+import React, { useContext, useState, useRef, useEffect, useCallback } from "react";
 import "./ChatArea.css";
 import ChatAreaHeader from "../chat-area-header/ChatAreaHeader";
 import ChatAreaBody from "../chat-area-body/ChatAreaBody";
 import ChatAreaFooter from "../chat-area-footer/ChatAreaFooter";
 import CallModal from "../call-modal/CallModal";
-import { useContext, useState, useRef, useEffect } from "react";
 import loggedInUserContext from "../../context/loggedInUserContext";
 import startChatContext from "../../context/startChatContext";
-
 
 function ChatArea({ socket }) {
   const { loggedInUser } = useContext(loggedInUserContext);
   const { startChatUserData } = useContext(startChatContext);
 
   const [callState, setCallState] = useState(null);
-  // callState = { type: 'audio'|'video', direction: 'outgoing'|'incoming', callerName, callerPic, offer }
 
   const localVideoRef = useRef(null);
   const remoteVideoRef = useRef(null);
   const peerRef = useRef(null);
+  const startChatUserDataRef = useRef(startChatUserData);
 
-  const createPeer = () => {
+  useEffect(() => {
+    startChatUserDataRef.current = startChatUserData;
+  }, [startChatUserData]);
+
+  const createPeer = useCallback(() => {
     const peer = new RTCPeerConnection({
-      iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
+      iceServers: [
+        { urls: "stun:stun.l.google.com:19302" },
+        { urls: "stun:stun1.l.google.com:19302" },
+      ],
     });
 
     peer.onicecandidate = (e) => {
-      if (e.candidate && startChatUserData) {
+      if (e.candidate && startChatUserDataRef.current) {
         socket.emit("ice-candidate", {
-          to: startChatUserData.id,
+          to: startChatUserDataRef.current.id,
           candidate: e.candidate,
         });
       }
@@ -41,51 +46,79 @@ function ChatArea({ socket }) {
     };
 
     return peer;
-  };
+  }, [socket]);
+
+  const endCall = useCallback(() => {
+    if (peerRef.current) {
+      peerRef.current.close();
+      peerRef.current = null;
+    }
+    if (localVideoRef.current?.srcObject) {
+      localVideoRef.current.srcObject.getTracks().forEach((t) => t.stop());
+      localVideoRef.current.srcObject = null;
+    }
+    if (remoteVideoRef.current?.srcObject) {
+      remoteVideoRef.current.srcObject.getTracks().forEach((t) => t.stop());
+      remoteVideoRef.current.srcObject = null;
+    }
+    setCallState((prev) => {
+      if (prev?.from) {
+        socket.emit("call-ended", { to: prev.from });
+      } else if (startChatUserDataRef.current) {
+        socket.emit("call-ended", { to: startChatUserDataRef.current.id });
+      }
+      return null;
+    });
+  }, [socket]);
 
   // Outgoing call
   const handleStartCall = async (callType) => {
-    if (!startChatUserData) return;
+    if (!startChatUserDataRef.current) return;
 
-    const constraints =
-      callType === "video"
-        ? { video: true, audio: true }
-        : { video: false, audio: true };
+    try {
+      const constraints =
+        callType === "video"
+          ? { video: true, audio: true }
+          : { video: false, audio: true };
 
-    const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
 
-    if (localVideoRef.current) {
-      localVideoRef.current.srcObject = stream;
+      if (localVideoRef.current) {
+        localVideoRef.current.srcObject = stream;
+      }
+
+      const peer = createPeer();
+      peerRef.current = peer;
+
+      stream.getTracks().forEach((track) => peer.addTrack(track, stream));
+
+      const offer = await peer.createOffer();
+      await peer.setLocalDescription(offer);
+
+      socket.emit("call-user", {
+        to: startChatUserDataRef.current.id,
+        from: loggedInUser._id,
+        offer,
+        callType,
+        callerName: loggedInUser.username,
+        callerPic: loggedInUser.file,
+      });
+
+      setCallState({
+        type: callType,
+        direction: "outgoing",
+        callerName: startChatUserDataRef.current.username,
+        callerPic: startChatUserDataRef.current.file,
+      });
+    } catch (err) {
+      console.error("Camera/mic error:", err);
+      alert("Camera ya microphone access nahi mila. Browser settings check karo.");
     }
-
-    const peer = createPeer();
-    peerRef.current = peer;
-
-    stream.getTracks().forEach((track) => peer.addTrack(track, stream));
-
-    const offer = await peer.createOffer();
-    await peer.setLocalDescription(offer);
-
-    socket.emit("call-user", {
-      to: startChatUserData.id,
-      from: loggedInUser._id,
-      offer,
-      callType,
-      callerName: loggedInUser.username,
-      callerPic: loggedInUser.file,
-    });
-
-    setCallState({
-      type: callType,
-      direction: "outgoing",
-      callerName: startChatUserData.username,
-      callerPic: startChatUserData.file,
-    });
   };
 
-  // Incoming call
+  // Socket listeners
   useEffect(() => {
-    socket.on("incoming-call", async (data) => {
+    socket.on("incoming-call", (data) => {
       setCallState({
         type: data.callType,
         direction: "incoming",
@@ -105,18 +138,42 @@ function ChatArea({ socket }) {
     });
 
     socket.on("call-rejected", () => {
-      endCall();
+      if (peerRef.current) {
+        peerRef.current.close();
+        peerRef.current = null;
+      }
+      if (localVideoRef.current?.srcObject) {
+        localVideoRef.current.srcObject.getTracks().forEach((t) => t.stop());
+        localVideoRef.current.srcObject = null;
+      }
+      setCallState(null);
     });
 
     socket.on("call-ended", () => {
-      endCall();
+      if (peerRef.current) {
+        peerRef.current.close();
+        peerRef.current = null;
+      }
+      if (localVideoRef.current?.srcObject) {
+        localVideoRef.current.srcObject.getTracks().forEach((t) => t.stop());
+        localVideoRef.current.srcObject = null;
+      }
+      if (remoteVideoRef.current?.srcObject) {
+        remoteVideoRef.current.srcObject.getTracks().forEach((t) => t.stop());
+        remoteVideoRef.current.srcObject = null;
+      }
+      setCallState(null);
     });
 
     socket.on("ice-candidate", async (data) => {
       if (peerRef.current && data.candidate) {
-        await peerRef.current.addIceCandidate(
-          new RTCIceCandidate(data.candidate)
-        );
+        try {
+          await peerRef.current.addIceCandidate(
+            new RTCIceCandidate(data.candidate)
+          );
+        } catch (e) {
+          console.error("ICE candidate error:", e);
+        }
       }
     });
 
@@ -133,66 +190,44 @@ function ChatArea({ socket }) {
   const acceptCall = async () => {
     if (!callState) return;
 
-    const constraints =
-      callState.type === "video"
-        ? { video: true, audio: true }
-        : { video: false, audio: true };
+    try {
+      const constraints =
+        callState.type === "video"
+          ? { video: true, audio: true }
+          : { video: false, audio: true };
 
-    const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
 
-    if (localVideoRef.current) {
-      localVideoRef.current.srcObject = stream;
+      if (localVideoRef.current) {
+        localVideoRef.current.srcObject = stream;
+      }
+
+      const peer = createPeer();
+      peerRef.current = peer;
+
+      stream.getTracks().forEach((track) => peer.addTrack(track, stream));
+
+      await peer.setRemoteDescription(
+        new RTCSessionDescription(callState.offer)
+      );
+
+      const answer = await peer.createAnswer();
+      await peer.setLocalDescription(answer);
+
+      socket.emit("call-accepted", {
+        to: callState.from,
+        answer,
+      });
+
+      setCallState((prev) => ({ ...prev, direction: "active" }));
+    } catch (err) {
+      console.error("Accept call error:", err);
+      alert("Camera ya microphone access nahi mila.");
     }
-
-    const peer = createPeer();
-    peerRef.current = peer;
-
-    stream.getTracks().forEach((track) => peer.addTrack(track, stream));
-
-    await peer.setRemoteDescription(
-      new RTCSessionDescription(callState.offer)
-    );
-
-    const answer = await peer.createAnswer();
-    await peer.setLocalDescription(answer);
-
-    socket.emit("call-accepted", {
-      to: callState.from,
-      answer,
-    });
-
-    setCallState((prev) => ({ ...prev, direction: "active" }));
   };
 
-  // Reject call
   const rejectCall = () => {
     socket.emit("call-rejected", { to: callState.from });
-    setCallState(null);
-  };
-
-  // End call
-  const endCall = () => {
-    if (peerRef.current) {
-      peerRef.current.close();
-      peerRef.current = null;
-    }
-    if (localVideoRef.current && localVideoRef.current.srcObject) {
-      localVideoRef.current.srcObject
-        .getTracks()
-        .forEach((track) => track.stop());
-      localVideoRef.current.srcObject = null;
-    }
-    if (remoteVideoRef.current && remoteVideoRef.current.srcObject) {
-      remoteVideoRef.current.srcObject
-        .getTracks()
-        .forEach((track) => track.stop());
-      remoteVideoRef.current.srcObject = null;
-    }
-    if (callState?.from) {
-      socket.emit("call-ended", { to: callState.from });
-    } else if (startChatUserData) {
-      socket.emit("call-ended", { to: startChatUserData.id });
-    }
     setCallState(null);
   };
 
@@ -202,7 +237,6 @@ function ChatArea({ socket }) {
       <ChatAreaBody socket={socket} />
       <ChatAreaFooter socket={socket} />
 
-      {/* Call Modal */}
       {callState && (
         <CallModal
           callState={callState}
