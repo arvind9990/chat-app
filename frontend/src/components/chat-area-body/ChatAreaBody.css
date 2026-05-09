@@ -3,6 +3,21 @@
   padding: 10px;
   display: flex;
   flex-direction: column;
+  scrollbar-width: thin;
+  scrollbar-color: darkgreen #e9f3ec;
+}
+
+.chat-area-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.chat-area-body::-webkit-scrollbar-track {
+  background: #e9f3ec;
+}
+
+.chat-area-body::-webkit-scrollbar-thumb {
+  background-color: darkgreen;
+  border-radius: 10px;
 }
 
 .senderMessage {

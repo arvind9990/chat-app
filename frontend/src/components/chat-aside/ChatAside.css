@@ -9,6 +9,20 @@
 .chat-list {
   overflow-y: auto;
   scrollbar-width: thin;
+  scrollbar-color: darkgreen #e9f3ec;
+}
+
+.chat-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.chat-list::-webkit-scrollbar-track {
+  background: #e9f3ec;
+}
+
+.chat-list::-webkit-scrollbar-thumb {
+  background-color: darkgreen;
+  border-radius: 10px;
 }
 
 /* Tablet + Mobile */
