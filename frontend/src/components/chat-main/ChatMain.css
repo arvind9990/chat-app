@@ -2,11 +2,14 @@
   height: 100%;
   display: grid;
   grid-template-columns: 30% 70%;
+  overflow: hidden;
 }
 
 .aside-wrapper {
   height: 100%;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .chat-wrapper {
@@ -30,11 +33,12 @@
   z-index: 10;
 }
 
-/* Tablet */
+/* Tablet + Mobile */
 @media (max-width: 768px) {
   .chat-main {
     grid-template-columns: 1fr;
     grid-template-rows: 1fr;
+    overflow: hidden;
   }
 
   .aside-wrapper.hide {
@@ -42,7 +46,10 @@
   }
 
   .aside-wrapper.show {
-    display: block;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
   }
 
   .chat-wrapper.hide-mobile {
@@ -51,14 +58,17 @@
 
   .chat-wrapper.show {
     display: flex;
+    flex-direction: column;
     height: 100%;
+    width: 100%;
   }
 }
 
 /* Desktop */
 @media (min-width: 769px) {
   .aside-wrapper {
-    display: block !important;
+    display: flex !important;
+    flex-direction: column !important;
   }
 
   .chat-wrapper {

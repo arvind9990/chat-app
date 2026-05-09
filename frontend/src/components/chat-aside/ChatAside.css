@@ -1,13 +1,15 @@
 .aside {
-  display: grid;
-  grid-template-rows: 70px 1fr;
-  overflow: hidden;
+  display: flex;
+  flex-direction: column;
   height: 100%;
+  overflow: hidden;
   border-right: 1px solid #e0e0e0;
 }
 
 .chat-list {
+  flex: 1;
   overflow-y: auto;
+  min-height: 0;
   scrollbar-width: thin;
   scrollbar-color: darkgreen #e9f3ec;
 }
@@ -25,10 +27,8 @@
   border-radius: 10px;
 }
 
-/* Tablet + Mobile */
 @media (max-width: 768px) {
   .aside {
-    grid-template-rows: 70px 1fr;
     height: 100%;
     width: 100%;
     border-right: none;
