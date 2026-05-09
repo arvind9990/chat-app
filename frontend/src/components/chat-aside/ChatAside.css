@@ -20,13 +20,11 @@
 
 .chat-list::-webkit-scrollbar-track {
   background: #e9f3ec;
-  border-radius: 10px;
 }
 
 .chat-list::-webkit-scrollbar-thumb {
   background-color: darkgreen;
   border-radius: 10px;
-  border: 2px solid #e9f3ec;
 }
 
 @media (max-width: 768px) {

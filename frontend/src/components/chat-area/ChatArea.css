@@ -1,20 +1,12 @@
 .chat-area {
-  display: grid;
-  grid-template-rows: 60px 1fr 55px;
+  display: flex;
+  flex-direction: column;
   height: 100%;
   overflow: hidden;
 }
 
-@media (max-width: 768px) {
-  .chat-area {
-    grid-template-rows: 60px 1fr 55px;
-    height: 100%;
-  }
-}
-
-@media (max-width: 480px) {
-  .chat-area {
-    grid-template-rows: 60px 1fr 55px;
-    height: 100%;
-  }
+.chat-area > *:nth-child(2) {
+  flex: 1;
+  min-height: 0;
+  overflow-y: scroll;
 }

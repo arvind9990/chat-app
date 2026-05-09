@@ -30,10 +30,8 @@
   text-align: left;
   width: 100%;
   flex-shrink: 0;
-  z-index: 10;
 }
 
-/* Tablet + Mobile */
 @media (max-width: 768px) {
   .chat-main {
     grid-template-columns: 1fr;
@@ -41,9 +39,7 @@
     overflow: hidden;
   }
 
-  .aside-wrapper.hide {
-    display: none;
-  }
+  .aside-wrapper.hide { display: none; }
 
   .aside-wrapper.show {
     display: flex;
@@ -52,9 +48,7 @@
     width: 100%;
   }
 
-  .chat-wrapper.hide-mobile {
-    display: none;
-  }
+  .chat-wrapper.hide-mobile { display: none; }
 
   .chat-wrapper.show {
     display: flex;
@@ -64,18 +58,8 @@
   }
 }
 
-/* Desktop */
 @media (min-width: 769px) {
-  .aside-wrapper {
-    display: flex !important;
-    flex-direction: column !important;
-  }
-
-  .chat-wrapper {
-    display: flex !important;
-  }
-
-  .back-btn {
-    display: none;
-  }
+  .aside-wrapper { display: flex !important; flex-direction: column !important; }
+  .chat-wrapper { display: flex !important; }
+  .back-btn { display: none; }
 }
