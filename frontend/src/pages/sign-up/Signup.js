@@ -26,20 +26,18 @@ export function signup(
 
     fileReader.onloadend = () => {
       axios
-        .post(`${import.meta.env.VITE_BACKEND_URL}/api/auth/signup`, {
+        .post(`${import.meta.env.VITE_BACKEND_URL}/api/auth/sign-up`, {
           ...data,
           file: fileReader.result,
         })
         .then((res) => {
           if (res.data.ok) {
             toast.success("Account Created");
-
             usernameRef.current.value = "";
             passwordRef.current.value = "";
             emailRef.current.value = "";
             cityRef.current.value = "";
             genderRef.current.value = "male";
-
             setTimeout(() => {
               navigate("/");
             }, 1000);

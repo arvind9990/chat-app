@@ -7,16 +7,7 @@ import loggedInUserContext from "../../context/loggedInUserContext";
 import allChatContext from "../../context/allChatContext";
 import onlineUsersContext from "../../context/OnlineUsersContext";
 
-function ChatListUser({
-  username,
-  email,
-  file,
-  id,
-  index,
-  selectChatListComp,
-  selectedChatListComp,
-  onUserDeleted,
-}) {
+function ChatListUser({ username, email, file, id, index, selectChatListComp, selectedChatListComp, onUserDeleted }) {
   const { onlineusers } = useContext(onlineUsersContext);
   const chatListContainerRef = useRef(null);
   const profileRef = useRef(null);
@@ -35,7 +26,7 @@ function ChatListUser({
 
   const getAllChats = () => {
     axios
-      .get(`${import.meta.env.VITE_BACKEND_URL}/api/chats/${loggedInUser._id}/${id}`)
+      .get(`${import.meta.env.VITE_BACKEND_URL}/api/chats/get-all-messages/${loggedInUser._id}/${id}`)
       .then((res) => {
         if (res.data.ok) {
           setAllChats(res.data.result);
@@ -52,7 +43,7 @@ function ChatListUser({
   const handleDelete = (e) => {
     e.stopPropagation();
     axios
-      .delete(`${import.meta.env.VITE_BACKEND_URL}/api/users/${loggedInUser._id}/${id}`)
+      .delete(`${import.meta.env.VITE_BACKEND_URL}/api/users/delete-user/${id}`)
       .then((res) => {
         if (res.data.ok) {
           toast.success("User removed", { autoClose: 1200 });
@@ -75,153 +66,42 @@ function ChatListUser({
         onClick={startChat}
         className="chat-list-user-container"
         ref={chatListContainerRef}
-        style={{
-          backgroundColor: selectedChatListComp === index ? "green" : "white",
-          position: "relative",
-        }}
+        style={{ backgroundColor: selectedChatListComp === index ? "green" : "white", position: "relative" }}
       >
         <div className="chat-list-user-image">
-          <div
-            ref={profileRef}
-            id="profile"
-            style={{
-              color: selectedChatListComp === index ? "green" : "white",
-              fontWeight: "bold",
-            }}
-          >
-            <div
-              id="mode"
-              style={{
-                backgroundColor: onlineusers.includes(id) ? "green" : "red",
-              }}
-            ></div>
-            <img
-              src={file || "https://cdn-icons-png.flaticon.com/512/4122/4122823.png"}
-              alt={username}
-              width="50"
-              height="50"
-              style={{ borderRadius: "50%", objectFit: "cover" }}
-            />
+          <div ref={profileRef} id="profile" style={{ color: selectedChatListComp === index ? "green" : "white", fontWeight: "bold" }}>
+            <div id="mode" style={{ backgroundColor: onlineusers.includes(id) ? "green" : "red" }}></div>
+            <img src={file || "https://cdn-icons-png.flaticon.com/512/4122/4122823.png"} alt={username} width="50" height="50" style={{ borderRadius: "50%", objectFit: "cover" }} />
           </div>
         </div>
         <div className="chat-list-user-details">
           <div>
-            <h3
-              style={{
-                color: selectedChatListComp === index ? "white" : "green",
-              }}
-              ref={usernameRef}
-            >
-              {username}
-            </h3>
+            <h3 style={{ color: selectedChatListComp === index ? "white" : "green" }} ref={usernameRef}>{username}</h3>
           </div>
           <div>
-            <p
-              style={{
-                color: selectedChatListComp === index ? "white" : "rgba(116, 110, 110, 1)",
-                fontWeight: "bold",
-                fontStyle: "italic",
-              }}
-              ref={emailRef}
-            >
-              {email}
-            </p>
+            <p style={{ color: selectedChatListComp === index ? "white" : "rgba(116, 110, 110, 1)", fontWeight: "bold", fontStyle: "italic" }} ref={emailRef}>{email}</p>
           </div>
         </div>
-
         <span
-          onClick={(e) => {
-            e.stopPropagation();
-            setConfirmDelete(true);
-          }}
+          onClick={(e) => { e.stopPropagation(); setConfirmDelete(true); }}
           title="Remove user"
-          style={{
-            position: "absolute",
-            right: "10px",
-            top: "50%",
-            transform: "translateY(-50%)",
-            background: "#cc2222",
-            color: "#fff",
-            borderRadius: "50%",
-            width: "22px",
-            height: "22px",
-            fontSize: "12px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            cursor: "pointer",
-            opacity: 0,
-            transition: "opacity 0.2s",
-          }}
+          style={{ position: "absolute", right: "10px", top: "50%", transform: "translateY(-50%)", background: "#cc2222", color: "#fff", borderRadius: "50%", width: "22px", height: "22px", fontSize: "12px", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", opacity: 0, transition: "opacity 0.2s" }}
           className="user-delete-btn"
-        >
-          ✕
-        </span>
+        >✕</span>
       </div>
 
       {confirmDelete && (
-        <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0,0,0,0.4)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 9999,
-          }}
-        >
-          <div
-            style={{
-              background: "#fff",
-              borderRadius: "12px",
-              padding: "24px 28px",
-              textAlign: "center",
-              minWidth: "220px",
-              boxShadow: "0 8px 24px rgba(0,0,0,0.2)",
-            }}
-          >
-            <p style={{ marginBottom: "16px", fontWeight: 500 }}>
-              Remove <strong>{username}</strong> from chat list?
-            </p>
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999 }}>
+          <div style={{ background: "#fff", borderRadius: "12px", padding: "24px 28px", textAlign: "center", minWidth: "220px", boxShadow: "0 8px 24px rgba(0,0,0,0.2)" }}>
+            <p style={{ marginBottom: "16px", fontWeight: 500 }}>Remove <strong>{username}</strong> from chat list?</p>
             <div style={{ display: "flex", gap: "12px", justifyContent: "center" }}>
-              <button
-                onClick={() => setConfirmDelete(false)}
-                style={{
-                  padding: "7px 20px",
-                  borderRadius: "20px",
-                  border: "1px solid #ccc",
-                  background: "transparent",
-                  cursor: "pointer",
-                  fontWeight: 500,
-                }}
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleDelete}
-                style={{
-                  padding: "7px 20px",
-                  borderRadius: "20px",
-                  border: "none",
-                  background: "#cc2222",
-                  color: "#fff",
-                  cursor: "pointer",
-                  fontWeight: 500,
-                }}
-              >
-                Delete
-              </button>
+              <button onClick={() => setConfirmDelete(false)} style={{ padding: "7px 20px", borderRadius: "20px", border: "1px solid #ccc", background: "transparent", cursor: "pointer", fontWeight: 500 }}>Cancel</button>
+              <button onClick={handleDelete} style={{ padding: "7px 20px", borderRadius: "20px", border: "none", background: "#cc2222", color: "#fff", cursor: "pointer", fontWeight: 500 }}>Delete</button>
             </div>
           </div>
         </div>
       )}
-
-      <style>{`
-        .chat-list-user-container:hover .user-delete-btn {
-          opacity: 1 !important;
-        }
-      `}</style>
+      <style>{`.chat-list-user-container:hover .user-delete-btn { opacity: 1 !important; }`}</style>
     </>
   );
 }

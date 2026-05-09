@@ -16,7 +16,7 @@ function UpdateProfile() {
 
     axios
       .put(
-        `${import.meta.env.VITE_BACKEND_URL}/api/users/${loggedInUser._id}`,
+        `${import.meta.env.VITE_BACKEND_URL}/api/users/update-user/${loggedInUser._id}`,
         updatedData,
       )
       .then((res) => {

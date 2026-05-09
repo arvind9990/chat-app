@@ -12,7 +12,7 @@ export function signin(
   const validationError = validateSignin(credentials, error, setError);
   if (!validationError) {
     axios
-      .post(`${import.meta.env.VITE_BACKEND_URL}/api/auth/signin`, credentials)
+      .post(`${import.meta.env.VITE_BACKEND_URL}/api/auth/sign-in`, credentials)
       .then((res) => {
         if (res.data.ok) {
           setLoggedInUser(res.data.user);

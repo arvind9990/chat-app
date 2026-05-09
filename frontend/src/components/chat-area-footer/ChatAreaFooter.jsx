@@ -17,13 +17,9 @@ function ChatAreaFooter({ socket }) {
 
   useEffect(() => {
     socket.on("received-message", (data) => {
-      setAllChats((prevAllMessages) => {
-        if (prevAllMessages) {
-          return [...prevAllMessages, data];
-        } else {
-          return [data];
-        }
-      });
+      setAllChats((prevAllMessages) =>
+        prevAllMessages ? [...prevAllMessages, data] : [data]
+      );
     });
   }, []);
 
@@ -32,11 +28,9 @@ function ChatAreaFooter({ socket }) {
       toast.error("Please Enter the Message", { autoClose: 1500 });
       return;
     }
-
     const msgText = messageRef.current.value;
-
     axios
-      .post(`${import.meta.env.VITE_BACKEND_URL}/api/chats`, {
+      .post(`${import.meta.env.VITE_BACKEND_URL}/api/chats/new-message`, {
         userIds: [loggedInUser._id, startChatUserData.id],
         message: msgText,
         senderId: loggedInUser._id,
@@ -45,9 +39,7 @@ function ChatAreaFooter({ socket }) {
         if (res.data.ok) {
           const savedMessage = res.data.result;
           socket.emit("send-message", savedMessage);
-          setAllChats((prev) =>
-            prev ? [...prev, savedMessage] : [savedMessage]
-          );
+          setAllChats((prev) => prev ? [...prev, savedMessage] : [savedMessage]);
           messageRef.current.value = "";
           setShowEmoji(false);
         } else {
@@ -62,27 +54,19 @@ function ChatAreaFooter({ socket }) {
   const handleImageChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-
     const formData = new FormData();
     formData.append("image", file);
     formData.append("userId1", loggedInUser._id);
     formData.append("userId2", startChatUserData.id);
     formData.append("senderId", loggedInUser._id);
-
     axios
-      .post(`${import.meta.env.VITE_BACKEND_URL}/api/chats/image`, formData, {
+      .post(`${import.meta.env.VITE_BACKEND_URL}/api/chats/send-image`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       })
       .then((res) => {
         if (res.data.ok) {
           socket.emit("send-message", res.data.result);
-          setAllChats((prevAllMessages) => {
-            if (prevAllMessages) {
-              return [...prevAllMessages, res.data.result];
-            } else {
-              return [res.data.result];
-            }
-          });
+          setAllChats((prev) => prev ? [...prev, res.data.result] : [res.data.result]);
           toast.success("Image Sent!", { autoClose: 1000 });
         } else {
           throw Error(res.data.error);
@@ -97,45 +81,22 @@ function ChatAreaFooter({ socket }) {
     <div className="chat-area-footer">
       <div className="emoji">
         <EmojiPicker
-          onEmojiClick={(event) => {
-            messageRef.current.value = messageRef.current.value + event.emoji;
-          }}
+          onEmojiClick={(event) => { messageRef.current.value = messageRef.current.value + event.emoji; }}
           open={showEmoji}
           width={800}
-          style={{
-            borderRadius: "12px",
-            boxShadow: "0 8px 24px rgba(0,0,0,0.6)",
-            padding: "8px",
-            margin: "auto",
-          }}
+          style={{ borderRadius: "12px", boxShadow: "0 8px 24px rgba(0,0,0,0.6)", padding: "8px", margin: "auto" }}
         />
       </div>
       <input
         ref={messageRef}
         type="text"
         placeholder="enter message"
-        onKeyDown={(e) => {
-          if (e.key === "Enter") sendMessage();
-        }}
+        onKeyDown={(e) => { if (e.key === "Enter") sendMessage(); }}
       />
-
-      <input
-        type="file"
-        accept="image/*"
-        ref={imageRef}
-        style={{ display: "none" }}
-        onChange={handleImageChange}
-      />
-
+      <input type="file" accept="image/*" ref={imageRef} style={{ display: "none" }} onChange={handleImageChange} />
       <div className="chat-area-footer-icons">
-        <i
-          className="bi bi-image-fill"
-          onClick={() => imageRef.current.click()}
-        ></i>
-        <i
-          className="bi bi-emoji-heart-eyes-fill"
-          onClick={() => setShowEmoji(!showEmoji)}
-        ></i>
+        <i className="bi bi-image-fill" onClick={() => imageRef.current.click()}></i>
+        <i className="bi bi-emoji-heart-eyes-fill" onClick={() => setShowEmoji(!showEmoji)}></i>
         <i className="bi bi-send-check" onClick={sendMessage}></i>
       </div>
     </div>
