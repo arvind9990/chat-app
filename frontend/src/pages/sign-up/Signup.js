@@ -57,15 +57,23 @@ function checkValidation(userNameRef, passwordRef, emailRef, cityRef) {
 
   if (userNameRef.current.value === "") {
     userNameRef.current.style.border = "2px solid red";
+    toast.error("Username is required");
   } else if (passwordRef.current.value === "") {
     passwordRef.current.style.border = "2px solid red";
+    toast.error("Password is required");
   } else if (emailRef.current.value === "") {
     emailRef.current.style.border = "2px solid red";
+    toast.error("Email is required");
+  } else if (!emailRef.current.value.endsWith("@gmail.com")) {
+    emailRef.current.style.border = "2px solid red";
+    toast.error("Only Gmail address allowed (@gmail.com)");
   } else if (cityRef.current.value === "") {
     cityRef.current.style.border = "2px solid red";
+    toast.error("City is required");
   } else {
     anyError = false;
   }
 
-  return anyError;
+  return anyError; 
+  
 }
