@@ -5,7 +5,9 @@ import ChatMain from "../../components/chat-main/ChatMain";
 import { io } from "socket.io-client";
 import loggedInUserContext from "../../context/loggedInUserContext";
 import onlineUsersContext from "../../context/OnlineUsersContext";
-const socket = io("http://localhost:3000");
+
+const socket = io(import.meta.env.VITE_BACKEND_URL);
+
 function Home() {
   const [onlineusers, setOnlineUsers] = useState([]);
   const { loggedInUser } = useContext(loggedInUserContext);
