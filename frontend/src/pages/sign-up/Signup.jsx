@@ -20,35 +20,38 @@ function Signup() {
 
         <div>
           <input type="text" placeholder="Username" ref={userNameRef} />
-          <span>
-            {submitted && userNameRef.current.value === ""
-              ? "username is required"
+          <span style={{ color: "red", fontSize: "12px" }}>
+            {submitted && userNameRef.current?.value === ""
+              ? "Username is required"
               : null}
           </span>
         </div>
+
         <div>
-          <input type="email" ref={emailRef} placeholder="Email Id" />
-          <span>
-            {submitted && emailRef.current.value === ""
-              ? "email is required"
+          <input type="email" ref={emailRef} placeholder="Email Id (@gmail.com only)" />
+          <span style={{ color: "red", fontSize: "12px" }}>
+            {submitted && emailRef.current?.value === ""
+              ? "Email is required"
+              : submitted && !emailRef.current?.value.endsWith("@gmail.com")
+              ? "Only Gmail allowed (@gmail.com)"
               : null}
           </span>
         </div>
 
         <div>
           <input type="password" ref={passwordRef} placeholder="Password" />
-          <span>
-            {submitted && passwordRef.current.value === ""
-              ? "password is required"
+          <span style={{ color: "red", fontSize: "12px" }}>
+            {submitted && passwordRef.current?.value === ""
+              ? "Password is required"
               : null}
           </span>
         </div>
 
         <div>
           <input type="text" ref={cityRef} placeholder="City" />
-          <span>
-            {submitted && cityRef.current.value === ""
-              ? "city is required"
+          <span style={{ color: "red", fontSize: "12px" }}>
+            {submitted && cityRef.current?.value === ""
+              ? "City is required"
               : null}
           </span>
         </div>
@@ -62,16 +65,19 @@ function Signup() {
         </div>
 
         <div>
-          <input type="file" ref={fileRef} />
+          <input type="file" ref={fileRef} accept="image/*" />
+          <span style={{ color: "red", fontSize: "12px" }}>
+            {submitted && fileRef.current?.files.length === 0
+              ? "Profile photo is required"
+              : null}
+          </span>
         </div>
 
         <div style={{ textAlign: "center" }}>
           <button
             type="button"
-            // disabled
             onClick={() => {
               setSubmitted(true);
-
               signup(
                 userNameRef,
                 passwordRef,
