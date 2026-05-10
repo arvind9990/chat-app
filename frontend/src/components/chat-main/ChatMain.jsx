@@ -1,11 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import "./ChatMain.css";
 import ChatAside from "../chat-aside/ChatAside.jsx";
 import ChatArea from "../chat-area/ChatArea.jsx";
 import allChatContext from "../../context/allChatContext.js";
 import startChatContext from "../../context/startChatContext.js";
 
-function ChatMain({ socket }) {
+function ChatMain({ socket, onStartCall }) {
   const [startChatUserData, setStartChatUserData] = useState(null);
   const [allChats, setAllChats] = useState(null);
   const [showChat, setShowChat] = useState(false);
@@ -21,6 +21,12 @@ function ChatMain({ socket }) {
     setShowChat(false);
     setStartChatUserData(null);
     setAllChats(null);
+  };
+
+  const handleStartCall = (callType) => {
+    if (onStartCall && startChatUserData) {
+      onStartCall(callType, startChatUserData);
+    }
   };
 
   return (
@@ -41,7 +47,7 @@ function ChatMain({ socket }) {
                 ← Back
               </button>
             )}
-            <ChatArea socket={socket} />
+            <ChatArea socket={socket} onStartCall={handleStartCall} />
           </div>
         </div>
       </startChatContext.Provider>
