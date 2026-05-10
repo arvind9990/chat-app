@@ -18,6 +18,7 @@ export function signin(
           setLoggedInUser(res.data.user);
           toast.success("User Logged In", { autoClose: 1000 });
           login();
+          setTimeout(() => navigate("/home"), 1000);
         } else {
           throw Error(res.data.error);
         }

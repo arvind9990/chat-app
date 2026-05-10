@@ -42,15 +42,27 @@ function ChatListUser({ username, email, file, id, index, selectChatListComp, se
 
   const handleDelete = (e) => {
     e.stopPropagation();
-    console.log("loggedInUser._id:", loggedInUser._id);
+
+    console.log("loggedInUser:", loggedInUser);
+    console.log("loggedInUser._id:", loggedInUser?._id);
     console.log("targetId:", id);
-    console.log("URL:", `${import.meta.env.VITE_BACKEND_URL}/api/users/delete-user/${loggedInUser._id}/${id}`);
+
+    const lId = loggedInUser?._id;
+    const tId = id;
+
+    if (!lId) {
+      toast.error("Login session expired — please login again");
+      return;
+    }
+
+    console.log("Final URL:", `${import.meta.env.VITE_BACKEND_URL}/api/users/delete-user/${lId}/${tId}`);
+
     axios
-      .delete(`${import.meta.env.VITE_BACKEND_URL}/api/users/delete-user/${loggedInUser._id}/${id}`)
+      .delete(`${import.meta.env.VITE_BACKEND_URL}/api/users/delete-user/${lId}/${tId}`)
       .then((res) => {
         if (res.data.ok) {
           toast.success("User removed from your list", { autoClose: 1200 });
-          if (onUserDeleted) onUserDeleted(id);
+          if (onUserDeleted) onUserDeleted(tId);
         } else {
           throw Error(res.data.error);
         }
