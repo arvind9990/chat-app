@@ -9,7 +9,12 @@ function App() {
   const [loggedInUser, setLoggedInUser] = useState(null);
 
   const login = () => setIsLoggedIn(true);
-  const logout = () => setIsLoggedIn(false);
+  const logout = () => {
+    setIsLoggedIn(false);
+    setLoggedInUser(null);
+  };
+
+  console.log("App loggedInUser:", loggedInUser);
 
   return (
     <div style={{ height: "100dvh", width: "100vw", overflow: "hidden" }}>
