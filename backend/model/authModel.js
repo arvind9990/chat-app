@@ -1,36 +1,14 @@
 const mongoose = require("mongoose");
 
-//Create Schema
 const UserSchema = new mongoose.Schema({
-  username: {
-    type: String,
-    require: true,
-  },
-  password: {
-    type: String,
-    require: true,
-  },
-  email: {
-    type: String,
-    require: true,
-    unique: true,
-  },
-
-  gender: {
-    type: String,
-    require: true,
-  },
-  city: {
-    type: String,
-    require: true,
-  },
-  file: {
-    type: String,
-    require: true,
-  },
+  username: { type: String, required: true },
+  password: { type: String, required: true },
+  email: { type: String, required: true, unique: true },
+  gender: { type: String, required: true },
+  city: { type: String, required: true },
+  file: { type: String, required: true },
+  blockedUsers: [{ type: String, default: [] }],
 });
 
-//Create Model Class or Model Class represents Collection here
 const User = mongoose.model("user", UserSchema);
-
 module.exports = User;
