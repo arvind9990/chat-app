@@ -43,12 +43,7 @@ function ChatListUser({ username, email, file, id, index, selectChatListComp, se
   const handleDelete = (e) => {
     e.stopPropagation();
     axios
-      .delete(`${import.meta.env.VITE_BACKEND_URL}/api/users/delete-user/${id}`, {
-        data: {
-          loggedInUserId: loggedInUser._id,
-          targetUserId: id,
-        },
-      })
+      .delete(`${import.meta.env.VITE_BACKEND_URL}/api/users/delete-user/${loggedInUser._id}/${id}`)
       .then((res) => {
         if (res.data.ok) {
           toast.success("User removed from your list", { autoClose: 1200 });
