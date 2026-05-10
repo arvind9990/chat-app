@@ -9,7 +9,6 @@ function CallModal({
   remoteVideoRef,
 }) {
   const [seconds, setSeconds] = useState(0);
-  const isActive = callState.direction === "active" || callState.direction === "outgoing";
   const isIncoming = callState.direction === "incoming";
   const isVideo = callState.type === "video";
 
@@ -28,42 +27,36 @@ function CallModal({
   };
 
   return (
-    <div
-      style={{
-        position: "fixed",
-        inset: 0,
-        background: "rgba(0,0,0,0.75)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        zIndex: 99999,
-      }}
-    >
-      <div
-        style={{
-          background: "#1a1a2e",
-          borderRadius: "20px",
-          padding: "28px 24px",
-          textAlign: "center",
-          minWidth: "300px",
-          color: "#fff",
-          boxShadow: "0 12px 40px rgba(0,0,0,0.5)",
-        }}
-      >
-        {/* Caller avatar */}
+    <div style={{
+      position: "fixed",
+      inset: 0,
+      background: "rgba(0,0,0,0.85)",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      zIndex: 99999,
+    }}>
+      <div style={{
+        background: "#1a1a2e",
+        borderRadius: "20px",
+        padding: "24px",
+        textAlign: "center",
+        width: "90%",
+        maxWidth: "480px",
+        color: "#fff",
+        boxShadow: "0 12px 40px rgba(0,0,0,0.5)",
+      }}>
+
         <img
-          src={
-            callState.callerPic ||
-            "https://cdn-icons-png.flaticon.com/512/4122/4122823.png"
-          }
+          src={callState.callerPic || "https://cdn-icons-png.flaticon.com/512/4122/4122823.png"}
           alt={callState.callerName}
           style={{
-            width: "72px",
-            height: "72px",
+            width: "68px",
+            height: "68px",
             borderRadius: "50%",
             objectFit: "cover",
             border: "3px solid #4FC3F7",
-            marginBottom: "12px",
+            marginBottom: "10px",
           }}
         />
 
@@ -71,7 +64,7 @@ function CallModal({
           {callState.callerName}
         </h3>
 
-        <p style={{ fontSize: "13px", color: "#aaa", margin: "0 0 16px" }}>
+        <p style={{ fontSize: "13px", color: "#aaa", margin: "0 0 14px" }}>
           {isIncoming
             ? `Incoming ${isVideo ? "video" : "audio"} call...`
             : callState.direction === "outgoing"
@@ -79,46 +72,51 @@ function CallModal({
             : `${isVideo ? "Video" : "Audio"} call • ${formatDuration(seconds)}`}
         </p>
 
-        {/* Video elements */}
+        {/* Video */}
         {isVideo && (
-          <div
-            style={{
-              display: "flex",
-              gap: "8px",
-              marginBottom: "16px",
-              justifyContent: "center",
-            }}
-          >
+          <div style={{
+            position: "relative",
+            width: "100%",
+            marginBottom: "16px",
+            borderRadius: "12px",
+            overflow: "hidden",
+            background: "#000",
+          }}>
+            {/* Remote video — poora bada */}
             <video
               ref={remoteVideoRef}
               autoPlay
               playsInline
               style={{
-                width: "180px",
-                height: "130px",
-                borderRadius: "10px",
-                background: "#000",
+                width: "100%",
+                height: "280px",
                 objectFit: "cover",
+                display: "block",
+                borderRadius: "12px",
               }}
             />
+            {/* Local video — chhota corner mein */}
             <video
               ref={localVideoRef}
               autoPlay
               playsInline
               muted
               style={{
+                position: "absolute",
+                bottom: "10px",
+                right: "10px",
                 width: "90px",
-                height: "70px",
+                height: "68px",
                 borderRadius: "8px",
-                background: "#222",
                 objectFit: "cover",
-                alignSelf: "flex-end",
+                border: "2px solid #4FC3F7",
+                background: "#222",
               }}
             />
           </div>
         )}
 
-        {/* Audio - show local/remote audio only */}
+        {/* Audio */}
         {!isVideo && (
           <>
             <audio ref={remoteVideoRef} autoPlay />
@@ -126,15 +124,13 @@ function CallModal({
           </>
         )}
 
-        {/* Action buttons */}
-        <div
-          style={{
-            display: "flex",
-            gap: "20px",
-            justifyContent: "center",
-            marginTop: "8px",
-          }}
-        >
+        {/* Buttons */}
+        <div style={{
+          display: "flex",
+          gap: "20px",
+          justifyContent: "center",
+          marginTop: "8px",
+        }}>
           {isIncoming && (
             <button
               onClick={onAccept}
