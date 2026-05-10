@@ -19,6 +19,7 @@ function Home() {
   const peerRef = useRef(null);
   const iceCandidateQueue = useRef([]);
   const callStateRef = useRef(null);
+  const endCallRef = useRef(null);
 
   useEffect(() => {
     callStateRef.current = callState;
@@ -44,10 +45,7 @@ function Home() {
 
     peer.onicecandidate = (e) => {
       if (e.candidate && targetId) {
-        socket.emit("ice-candidate", {
-          to: targetId,
-          candidate: e.candidate,
-        });
+        socket.emit("ice-candidate", { to: targetId, candidate: e.candidate });
       }
     };
 
@@ -69,6 +67,29 @@ function Home() {
       } catch (e) {}
     }
   };
+
+  const endCall = () => {
+    if (peerRef.current) {
+      peerRef.current.close();
+      peerRef.current = null;
+    }
+    if (localVideoRef.current?.srcObject) {
+      localVideoRef.current.srcObject.getTracks().forEach((t) => t.stop());
+      localVideoRef.current.srcObject = null;
+    }
+    if (remoteVideoRef.current?.srcObject) {
+      remoteVideoRef.current.srcObject.getTracks().forEach((t) => t.stop());
+      remoteVideoRef.current.srcObject = null;
+    }
+    const current = callStateRef.current;
+    if (current?.from) socket.emit("call-ended", { to: current.from });
+    else if (current?.to) socket.emit("call-ended", { to: current.to });
+    iceCandidateQueue.current = [];
+    setCallState(null);
+  };
+
+  // endCall ko ref mein rakho taaki useEffect mein latest version mile
+  endCallRef.current = endCall;
 
   useEffect(() => {
     socket.emit("join-room", loggedInUser._id);
@@ -100,8 +121,8 @@ function Home() {
       }
     });
 
-    socket.on("call-rejected", () => endCall());
-    socket.on("call-ended", () => endCall());
+    socket.on("call-rejected", () => endCallRef.current());
+    socket.on("call-ended", () => endCallRef.current());
 
     socket.on("ice-candidate", async (data) => {
       if (!data.candidate) return;
@@ -130,10 +151,9 @@ function Home() {
   const handleStartCall = async (callType, targetUser) => {
     if (!targetUser) return;
     try {
-      const constraints =
-        callType === "video"
-          ? { video: true, audio: true }
-          : { video: false, audio: true };
+      const constraints = callType === "video"
+        ? { video: true, audio: true }
+        : { video: false, audio: true };
 
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
 
@@ -171,12 +191,12 @@ function Home() {
   };
 
   const acceptCall = async () => {
-    if (!callState) return;
+    if (!callStateRef.current) return;
+    const cs = callStateRef.current;
     try {
-      const constraints =
-        callState.type === "video"
-          ? { video: true, audio: true }
-          : { video: false, audio: true };
+      const constraints = cs.type === "video"
+        ? { video: true, audio: true }
+        : { video: false, audio: true };
 
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
 
@@ -185,19 +205,17 @@ function Home() {
         localVideoRef.current.play().catch(() => {});
       }
 
-      const peer = createPeer(callState.from);
+      const peer = createPeer(cs.from);
       peerRef.current = peer;
       stream.getTracks().forEach((track) => peer.addTrack(track, stream));
 
-      await peer.setRemoteDescription(
-        new RTCSessionDescription(callState.offer)
-      );
+      await peer.setRemoteDescription(new RTCSessionDescription(cs.offer));
       await drainQueue(peer);
 
       const answer = await peer.createAnswer();
       await peer.setLocalDescription(answer);
 
-      socket.emit("call-accepted", { to: callState.from, answer });
+      socket.emit("call-accepted", { to: cs.from, answer });
       setCallState((prev) => ({ ...prev, direction: "active" }));
     } catch (err) {
       alert("Camera/mic access nahi mila.");
@@ -205,27 +223,7 @@ function Home() {
   };
 
   const rejectCall = () => {
-    socket.emit("call-rejected", { to: callState.from });
-    setCallState(null);
-  };
-
-  const endCall = () => {
-    if (peerRef.current) {
-      peerRef.current.close();
-      peerRef.current = null;
-    }
-    if (localVideoRef.current?.srcObject) {
-      localVideoRef.current.srcObject.getTracks().forEach((t) => t.stop());
-      localVideoRef.current.srcObject = null;
-    }
-    if (remoteVideoRef.current?.srcObject) {
-      remoteVideoRef.current.srcObject.getTracks().forEach((t) => t.stop());
-      remoteVideoRef.current.srcObject = null;
-    }
-    const current = callStateRef.current;
-    if (current?.from) socket.emit("call-ended", { to: current.from });
-    else if (current?.to) socket.emit("call-ended", { to: current.to });
-    iceCandidateQueue.current = [];
+    socket.emit("call-rejected", { to: callStateRef.current?.from });
     setCallState(null);
   };
 
