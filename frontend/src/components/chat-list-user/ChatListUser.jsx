@@ -43,10 +43,15 @@ function ChatListUser({ username, email, file, id, index, selectChatListComp, se
   const handleDelete = (e) => {
     e.stopPropagation();
     axios
-      .delete(`${import.meta.env.VITE_BACKEND_URL}/api/users/delete-user/${id}`)
+      .delete(`${import.meta.env.VITE_BACKEND_URL}/api/users/delete-user/${id}`, {
+        data: {
+          loggedInUserId: loggedInUser._id,
+          targetUserId: id,
+        },
+      })
       .then((res) => {
         if (res.data.ok) {
-          toast.success("User removed", { autoClose: 1200 });
+          toast.success("User removed from your list", { autoClose: 1200 });
           if (onUserDeleted) onUserDeleted(id);
         } else {
           throw Error(res.data.error);
@@ -93,7 +98,7 @@ function ChatListUser({ username, email, file, id, index, selectChatListComp, se
       {confirmDelete && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999 }}>
           <div style={{ background: "#fff", borderRadius: "12px", padding: "24px 28px", textAlign: "center", minWidth: "220px", boxShadow: "0 8px 24px rgba(0,0,0,0.2)" }}>
-            <p style={{ marginBottom: "16px", fontWeight: 500 }}>Remove <strong>{username}</strong> from chat list?</p>
+            <p style={{ marginBottom: "16px", fontWeight: 500 }}>Remove <strong>{username}</strong> from your list?</p>
             <div style={{ display: "flex", gap: "12px", justifyContent: "center" }}>
               <button onClick={() => setConfirmDelete(false)} style={{ padding: "7px 20px", borderRadius: "20px", border: "1px solid #ccc", background: "transparent", cursor: "pointer", fontWeight: 500 }}>Cancel</button>
               <button onClick={handleDelete} style={{ padding: "7px 20px", borderRadius: "20px", border: "none", background: "#cc2222", color: "#fff", cursor: "pointer", fontWeight: 500 }}>Delete</button>
