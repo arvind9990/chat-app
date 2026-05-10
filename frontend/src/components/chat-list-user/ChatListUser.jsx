@@ -42,6 +42,9 @@ function ChatListUser({ username, email, file, id, index, selectChatListComp, se
 
   const handleDelete = (e) => {
     e.stopPropagation();
+    console.log("loggedInUser._id:", loggedInUser._id);
+    console.log("targetId:", id);
+    console.log("URL:", `${import.meta.env.VITE_BACKEND_URL}/api/users/delete-user/${loggedInUser._id}/${id}`);
     axios
       .delete(`${import.meta.env.VITE_BACKEND_URL}/api/users/delete-user/${loggedInUser._id}/${id}`)
       .then((res) => {
