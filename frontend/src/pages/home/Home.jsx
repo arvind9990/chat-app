@@ -9,7 +9,7 @@ import onlineUsersContext from "../../context/OnlineUsersContext";
 
 const socket = io(import.meta.env.VITE_BACKEND_URL);
 
-const ringtone = new Audio("https://www.soundjay.com/phone/sounds/phone-ringing-1.mp3");
+const ringtone = new Audio("https://www.zedge.net/ringtones/508c08ea-a2f5-342c-8ed5-60a7616e459d");
 ringtone.loop = true;
 
 function Home() {
