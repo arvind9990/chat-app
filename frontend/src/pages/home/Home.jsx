@@ -28,22 +28,48 @@ function Home() {
     callStateRef.current = callState;
   }, [callState]);
 
+  // ServiceWorker + Notification setup
   useEffect(() => {
-    const askPermission = async () => {
-      if (Notification.permission === "default") {
+    const setup = async () => {
+      if ("serviceWorker" in navigator) {
+        try {
+          await navigator.serviceWorker.register("/sw.js");
+        } catch (e) {}
+      }
+      if (Notification.permission !== "granted") {
         await Notification.requestPermission();
       }
     };
-    document.addEventListener("click", askPermission, { once: true });
-    return () => document.removeEventListener("click", askPermission);
+    setup();
   }, []);
 
   const showNotification = (title, body, icon) => {
     if (Notification.permission === "granted") {
-      new Notification(title, {
-        body,
-        icon: icon || "https://cdn-icons-png.flaticon.com/512/4122/4122823.png",
+      navigator.serviceWorker.ready.then((reg) => {
+        reg.showNotification(title, {
+          body,
+          icon: icon || "/vite.svg",
+          badge: "/vite.svg",
+          vibrate: [500, 300, 500],
+        });
+      }).catch(() => {
+        new Notification(title, {
+          body,
+          icon: icon || "/vite.svg",
+        });
       });
+    }
+  };
+
+  const vibratePhone = () => {
+    if (navigator.vibrate) {
+      navigator.vibrate([500, 300, 500, 300, 500]);
+    }
+  };
+
+  const stopVibrate = () => {
+    if (navigator.vibrate) {
+      navigator.vibrate(0);
     }
   };
 
@@ -93,6 +119,7 @@ function Home() {
   const endCall = () => {
     ringtone.pause();
     ringtone.currentTime = 0;
+    stopVibrate();
 
     if (peerRef.current) {
       peerRef.current.close();
@@ -123,7 +150,7 @@ function Home() {
 
     socket.on("received-message", (data) => {
       showNotification(
-        "New Message — Arvi Chat",
+        "💬 New Message — Arvi Chat",
         data.message || "📷 Image received",
         null
       );
@@ -132,6 +159,7 @@ function Home() {
     socket.on("incoming-call", (data) => {
       iceCandidateQueue.current = [];
       ringtone.play().catch(() => {});
+      vibratePhone();
       showNotification(
         `📞 Incoming ${data.callType === "video" ? "Video" : "Audio"} Call`,
         `${data.callerName} is calling you...`,
@@ -150,6 +178,7 @@ function Home() {
     socket.on("call-accepted", async (data) => {
       ringtone.pause();
       ringtone.currentTime = 0;
+      stopVibrate();
       if (peerRef.current) {
         try {
           await peerRef.current.setRemoteDescription(
@@ -234,6 +263,7 @@ function Home() {
   const acceptCall = async () => {
     ringtone.pause();
     ringtone.currentTime = 0;
+    stopVibrate();
     if (!callStateRef.current) return;
     const cs = callStateRef.current;
     try {
@@ -268,6 +298,7 @@ function Home() {
   const rejectCall = () => {
     ringtone.pause();
     ringtone.currentTime = 0;
+    stopVibrate();
     socket.emit("call-rejected", { to: callStateRef.current?.from });
     setCallState(null);
   };
@@ -293,4 +324,4 @@ function Home() {
   );
 }
 
-export default Home;
+export default Home
