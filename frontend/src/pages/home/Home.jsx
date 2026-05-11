@@ -9,7 +9,7 @@ import onlineUsersContext from "../../context/OnlineUsersContext";
 
 const socket = io(import.meta.env.VITE_BACKEND_URL);
 
-const ringtone = new Audio("https://www.zedge.net/ringtones/508c08ea-a2f5-342c-8ed5-60a7616e459d");
+const ringtone = new Audio("https://res.cloudinary.com/dzfqys9wk/video/upload/WhatsApp_Audio_2026-05-11_at_7.50.08_AM_bmzszh.mp3");
 ringtone.loop = true;
 
 function Home() {
@@ -28,11 +28,14 @@ function Home() {
     callStateRef.current = callState;
   }, [callState]);
 
-  // Notification permission maango
   useEffect(() => {
-    if (Notification.permission === "default") {
-      Notification.requestPermission();
-    }
+    const askPermission = async () => {
+      if (Notification.permission === "default") {
+        await Notification.requestPermission();
+      }
+    };
+    document.addEventListener("click", askPermission, { once: true });
+    return () => document.removeEventListener("click", askPermission);
   }, []);
 
   const showNotification = (title, body, icon) => {
@@ -118,7 +121,6 @@ function Home() {
     socket.on("online", (onlineUsers) => setOnlineUsers(onlineUsers));
     socket.on("offline", (filteredIds) => setOnlineUsers(filteredIds));
 
-    // Message notification
     socket.on("received-message", (data) => {
       showNotification(
         "New Message — Arvi Chat",
@@ -127,20 +129,14 @@ function Home() {
       );
     });
 
-    // Incoming call
     socket.on("incoming-call", (data) => {
       iceCandidateQueue.current = [];
-
-      // Ringtone bajao
       ringtone.play().catch(() => {});
-
-      // Browser notification
       showNotification(
         `📞 Incoming ${data.callType === "video" ? "Video" : "Audio"} Call`,
         `${data.callerName} is calling you...`,
         data.callerPic
       );
-
       setCallState({
         type: data.callType,
         direction: "incoming",
