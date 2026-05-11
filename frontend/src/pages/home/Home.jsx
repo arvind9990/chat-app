@@ -9,6 +9,9 @@ import onlineUsersContext from "../../context/OnlineUsersContext";
 
 const socket = io(import.meta.env.VITE_BACKEND_URL);
 
+const ringtone = new Audio("https://www.soundjay.com/phone/sounds/phone-ringing-1.mp3");
+ringtone.loop = true;
+
 function Home() {
   const [onlineusers, setOnlineUsers] = useState([]);
   const { loggedInUser } = useContext(loggedInUserContext);
@@ -24,6 +27,22 @@ function Home() {
   useEffect(() => {
     callStateRef.current = callState;
   }, [callState]);
+
+  // Notification permission maango
+  useEffect(() => {
+    if (Notification.permission === "default") {
+      Notification.requestPermission();
+    }
+  }, []);
+
+  const showNotification = (title, body, icon) => {
+    if (Notification.permission === "granted") {
+      new Notification(title, {
+        body,
+        icon: icon || "https://cdn-icons-png.flaticon.com/512/4122/4122823.png",
+      });
+    }
+  };
 
   const createPeer = (targetId) => {
     const peer = new RTCPeerConnection({
@@ -69,6 +88,9 @@ function Home() {
   };
 
   const endCall = () => {
+    ringtone.pause();
+    ringtone.currentTime = 0;
+
     if (peerRef.current) {
       peerRef.current.close();
       peerRef.current = null;
@@ -88,7 +110,6 @@ function Home() {
     setCallState(null);
   };
 
-  // endCall ko ref mein rakho taaki useEffect mein latest version mile
   endCallRef.current = endCall;
 
   useEffect(() => {
@@ -97,8 +118,29 @@ function Home() {
     socket.on("online", (onlineUsers) => setOnlineUsers(onlineUsers));
     socket.on("offline", (filteredIds) => setOnlineUsers(filteredIds));
 
+    // Message notification
+    socket.on("received-message", (data) => {
+      showNotification(
+        "New Message — Arvi Chat",
+        data.message || "📷 Image received",
+        null
+      );
+    });
+
+    // Incoming call
     socket.on("incoming-call", (data) => {
       iceCandidateQueue.current = [];
+
+      // Ringtone bajao
+      ringtone.play().catch(() => {});
+
+      // Browser notification
+      showNotification(
+        `📞 Incoming ${data.callType === "video" ? "Video" : "Audio"} Call`,
+        `${data.callerName} is calling you...`,
+        data.callerPic
+      );
+
       setCallState({
         type: data.callType,
         direction: "incoming",
@@ -110,6 +152,8 @@ function Home() {
     });
 
     socket.on("call-accepted", async (data) => {
+      ringtone.pause();
+      ringtone.currentTime = 0;
       if (peerRef.current) {
         try {
           await peerRef.current.setRemoteDescription(
@@ -140,6 +184,7 @@ function Home() {
     return () => {
       socket.off("online");
       socket.off("offline");
+      socket.off("received-message");
       socket.off("incoming-call");
       socket.off("call-accepted");
       socket.off("call-rejected");
@@ -191,6 +236,8 @@ function Home() {
   };
 
   const acceptCall = async () => {
+    ringtone.pause();
+    ringtone.currentTime = 0;
     if (!callStateRef.current) return;
     const cs = callStateRef.current;
     try {
@@ -223,6 +270,8 @@ function Home() {
   };
 
   const rejectCall = () => {
+    ringtone.pause();
+    ringtone.currentTime = 0;
     socket.emit("call-rejected", { to: callStateRef.current?.from });
     setCallState(null);
   };
