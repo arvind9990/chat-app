@@ -19,6 +19,7 @@ function Home() {
   const [callState, setCallState] = useState(null);
   const localVideoRef = useRef(null);
   const remoteVideoRef = useRef(null);
+  const localStreamRef = useRef(null);
   const peerRef = useRef(null);
   const iceCandidateQueue = useRef([]);
   const callStateRef = useRef(null);
@@ -27,6 +28,14 @@ function Home() {
   useEffect(() => {
     callStateRef.current = callState;
   }, [callState]);
+
+  // Reattach local video stream whenever the modal re-renders (e.g. incoming -> active)
+  useEffect(() => {
+    if (localStreamRef.current && localVideoRef.current) {
+      localVideoRef.current.srcObject = localStreamRef.current;
+      localVideoRef.current.play().catch(() => {});
+    }
+  }, [callState?.direction]);
 
   // ServiceWorker + Notification setup
   useEffect(() => {
@@ -124,6 +133,10 @@ function Home() {
     if (peerRef.current) {
       peerRef.current.close();
       peerRef.current = null;
+    }
+    if (localStreamRef.current) {
+      localStreamRef.current.getTracks().forEach((t) => t.stop());
+      localStreamRef.current = null;
     }
     if (localVideoRef.current?.srcObject) {
       localVideoRef.current.srcObject.getTracks().forEach((t) => t.stop());
@@ -226,6 +239,7 @@ function Home() {
         : { video: false, audio: true };
 
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      localStreamRef.current = stream;
 
       if (localVideoRef.current) {
         localVideoRef.current.srcObject = stream;
@@ -272,11 +286,7 @@ function Home() {
         : { video: false, audio: true };
 
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
-
-      if (localVideoRef.current) {
-        localVideoRef.current.srcObject = stream;
-        localVideoRef.current.play().catch(() => {});
-      }
+      localStreamRef.current = stream;
 
       const peer = createPeer(cs.from);
       peerRef.current = peer;
@@ -324,4 +334,4 @@ function Home() {
   );
 }
 
-export default Home
+export default Home;
