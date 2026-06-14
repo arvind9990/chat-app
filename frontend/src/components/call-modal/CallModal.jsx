@@ -9,8 +9,15 @@ function CallModal({
   remoteVideoRef,
 }) {
   const [seconds, setSeconds] = useState(0);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const isIncoming = callState.direction === "incoming";
   const isVideo = callState.type === "video";
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   useEffect(() => {
     let timer;
@@ -26,76 +33,87 @@ function CallModal({
     return `${m}:${sec}`;
   };
 
+  const videoHeight = isMobile ? "55vw" : "420px";
+  const localW = isMobile ? "80px" : "130px";
+  const localH = isMobile ? "60px" : "96px";
+
   return (
     <div style={{
       position: "fixed",
       inset: 0,
-      background: "rgba(0,0,0,0.85)",
+      background: "rgba(0,0,0,0.92)",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
       zIndex: 99999,
+      padding: isMobile ? "10px" : "0",
     }}>
       <div style={{
         background: "#1a1a2e",
         borderRadius: "20px",
-        padding: "24px",
+        padding: isMobile ? "14px" : "20px",
         textAlign: "center",
-        width: "90%",
-        maxWidth: "480px",
+        width: "100%",
+        maxWidth: isMobile ? "100%" : "780px",
         color: "#fff",
-        boxShadow: "0 12px 40px rgba(0,0,0,0.5)",
+        boxShadow: "0 12px 40px rgba(0,0,0,0.6)",
       }}>
 
-        <img
-          src={callState.callerPic || "https://cdn-icons-png.flaticon.com/512/4122/4122823.png"}
-          alt={callState.callerName}
-          style={{
-            width: "68px",
-            height: "68px",
-            borderRadius: "50%",
-            objectFit: "cover",
-            border: "3px solid #4FC3F7",
-            marginBottom: "10px",
-          }}
-        />
+        {/* Caller info */}
+        <div style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: "12px",
+          marginBottom: "12px",
+        }}>
+          <img
+            src={callState.callerPic || "https://cdn-icons-png.flaticon.com/512/4122/4122823.png"}
+            alt={callState.callerName}
+            style={{
+              width: isMobile ? "40px" : "48px",
+              height: isMobile ? "40px" : "48px",
+              borderRadius: "50%",
+              objectFit: "cover",
+              border: "2px solid #4FC3F7",
+            }}
+          />
+          <div style={{ textAlign: "left" }}>
+            <h3 style={{ margin: 0, fontSize: isMobile ? "15px" : "17px" }}>
+              {callState.callerName}
+            </h3>
+            <p style={{ fontSize: "12px", color: "#aaa", margin: 0 }}>
+              {isIncoming
+                ? `Incoming ${isVideo ? "video" : "audio"} call...`
+                : callState.direction === "outgoing"
+                ? `Calling... (${isVideo ? "Video" : "Audio"})`
+                : `${isVideo ? "Video" : "Audio"} call • ${formatDuration(seconds)}`}
+            </p>
+          </div>
+        </div>
 
-        <h3 style={{ margin: "0 0 4px", fontSize: "18px" }}>
-          {callState.callerName}
-        </h3>
-
-        <p style={{ fontSize: "13px", color: "#aaa", margin: "0 0 14px" }}>
-          {isIncoming
-            ? `Incoming ${isVideo ? "video" : "audio"} call...`
-            : callState.direction === "outgoing"
-            ? `Calling... (${isVideo ? "Video" : "Audio"})`
-            : `${isVideo ? "Video" : "Audio"} call • ${formatDuration(seconds)}`}
-        </p>
-
-        {/* Video */}
-        {isVideo && (
+        {/* Active/Outgoing Video */}
+        {isVideo && !isIncoming && (
           <div style={{
             position: "relative",
             width: "100%",
             marginBottom: "16px",
-            borderRadius: "12px",
+            borderRadius: "14px",
             overflow: "hidden",
             background: "#000",
           }}>
-            {/* Remote video — poora bada */}
             <video
               ref={remoteVideoRef}
               autoPlay
               playsInline
               style={{
                 width: "100%",
-                height: "280px",
+                height: videoHeight,
                 objectFit: "cover",
                 display: "block",
-                borderRadius: "12px",
+                borderRadius: "14px",
               }}
             />
-            {/* Local video — chhota corner mein */}
             <video
               ref={localVideoRef}
               autoPlay
@@ -105,14 +123,32 @@ function CallModal({
                 position: "absolute",
                 bottom: "10px",
                 right: "10px",
-                width: "90px",
-                height: "68px",
-                borderRadius: "8px",
+                width: localW,
+                height: localH,
+                borderRadius: "10px",
                 objectFit: "cover",
                 border: "2px solid #4FC3F7",
                 background: "#222",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.5)",
               }}
             />
+          </div>
+        )}
+
+        {/* Incoming call placeholder */}
+        {isVideo && isIncoming && (
+          <div style={{
+            width: "100%",
+            height: isMobile ? "100px" : "120px",
+            borderRadius: "14px",
+            background: "#0d0d1a",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            marginBottom: "16px",
+            border: "1px solid #333",
+          }}>
+            <span style={{ fontSize: isMobile ? "32px" : "40px" }}>📹</span>
           </div>
         )}
 
@@ -135,8 +171,8 @@ function CallModal({
             <button
               onClick={onAccept}
               style={{
-                width: "54px",
-                height: "54px",
+                width: isMobile ? "52px" : "58px",
+                height: isMobile ? "52px" : "58px",
                 borderRadius: "50%",
                 background: "#1D9E75",
                 border: "none",
@@ -144,6 +180,7 @@ function CallModal({
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
+                boxShadow: "0 4px 15px rgba(29,158,117,0.4)",
               }}
               title="Accept"
             >
@@ -156,8 +193,8 @@ function CallModal({
           <button
             onClick={isIncoming ? onReject : onEnd}
             style={{
-              width: "54px",
-              height: "54px",
+              width: isMobile ? "52px" : "58px",
+              height: isMobile ? "52px" : "58px",
               borderRadius: "50%",
               background: "#E24B4A",
               border: "none",
@@ -165,6 +202,7 @@ function CallModal({
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
+              boxShadow: "0 4px 15px rgba(226,75,74,0.4)",
             }}
             title={isIncoming ? "Reject" : "End Call"}
           >
