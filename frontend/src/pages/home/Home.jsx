@@ -20,6 +20,7 @@ function Home() {
   const localVideoRef = useRef(null);
   const remoteVideoRef = useRef(null);
   const localStreamRef = useRef(null);
+  const remoteStreamRef = useRef(null);
   const peerRef = useRef(null);
   const iceCandidateQueue = useRef([]);
   const callStateRef = useRef(null);
@@ -29,15 +30,21 @@ function Home() {
     callStateRef.current = callState;
   }, [callState]);
 
-  // Reattach local video stream whenever the modal re-renders (e.g. incoming -> active)
+  // Reattach both streams when call becomes active
   useEffect(() => {
-    if (localStreamRef.current && localVideoRef.current) {
-      localVideoRef.current.srcObject = localStreamRef.current;
-      localVideoRef.current.play().catch(() => {});
+    if (callState?.direction === "active") {
+      if (localStreamRef.current && localVideoRef.current) {
+        localVideoRef.current.srcObject = localStreamRef.current;
+        localVideoRef.current.play().catch(() => {});
+      }
+      if (remoteStreamRef.current && remoteVideoRef.current) {
+        remoteVideoRef.current.srcObject = remoteStreamRef.current;
+        remoteVideoRef.current.play().catch(() => {});
+      }
     }
   }, [callState?.direction]);
 
-  // ServiceWorker + Notification setup
+  // ServiceWorker + Notification
   useEffect(() => {
     const setup = async () => {
       if ("serviceWorker" in navigator) {
@@ -54,32 +61,27 @@ function Home() {
 
   const showNotification = (title, body, icon) => {
     if (Notification.permission === "granted") {
-      navigator.serviceWorker.ready.then((reg) => {
-        reg.showNotification(title, {
-          body,
-          icon: icon || "/vite.svg",
-          badge: "/vite.svg",
-          vibrate: [500, 300, 500],
+      navigator.serviceWorker.ready
+        .then((reg) => {
+          reg.showNotification(title, {
+            body,
+            icon: icon || "/vite.svg",
+            badge: "/vite.svg",
+            vibrate: [500, 300, 500],
+          });
+        })
+        .catch(() => {
+          new Notification(title, { body, icon: icon || "/vite.svg" });
         });
-      }).catch(() => {
-        new Notification(title, {
-          body,
-          icon: icon || "/vite.svg",
-        });
-      });
     }
   };
 
   const vibratePhone = () => {
-    if (navigator.vibrate) {
-      navigator.vibrate([500, 300, 500, 300, 500]);
-    }
+    if (navigator.vibrate) navigator.vibrate([500, 300, 500, 300, 500]);
   };
 
   const stopVibrate = () => {
-    if (navigator.vibrate) {
-      navigator.vibrate(0);
-    }
+    if (navigator.vibrate) navigator.vibrate(0);
   };
 
   const createPeer = (targetId) => {
@@ -107,10 +109,22 @@ function Home() {
     };
 
     peer.ontrack = (e) => {
-      if (remoteVideoRef.current && e.streams[0]) {
-        remoteVideoRef.current.srcObject = e.streams[0];
-        remoteVideoRef.current.play().catch(() => {});
+      console.log("ontrack fired", e.streams);
+      if (e.streams && e.streams[0]) {
+        remoteStreamRef.current = e.streams[0];
+        if (remoteVideoRef.current) {
+          remoteVideoRef.current.srcObject = e.streams[0];
+          remoteVideoRef.current.play().catch(() => {});
+        }
       }
+    };
+
+    peer.onconnectionstatechange = () => {
+      console.log("Connection state:", peer.connectionState);
+    };
+
+    peer.onicegatheringstatechange = () => {
+      console.log("ICE gathering:", peer.iceGatheringState);
     };
 
     return peer;
@@ -121,7 +135,9 @@ function Home() {
       const candidate = iceCandidateQueue.current.shift();
       try {
         await peer.addIceCandidate(new RTCIceCandidate(candidate));
-      } catch (e) {}
+      } catch (e) {
+        console.error("drain queue error:", e);
+      }
     }
   };
 
@@ -138,14 +154,13 @@ function Home() {
       localStreamRef.current.getTracks().forEach((t) => t.stop());
       localStreamRef.current = null;
     }
-    if (localVideoRef.current?.srcObject) {
-      localVideoRef.current.srcObject.getTracks().forEach((t) => t.stop());
-      localVideoRef.current.srcObject = null;
+    if (remoteStreamRef.current) {
+      remoteStreamRef.current.getTracks().forEach((t) => t.stop());
+      remoteStreamRef.current = null;
     }
-    if (remoteVideoRef.current?.srcObject) {
-      remoteVideoRef.current.srcObject.getTracks().forEach((t) => t.stop());
-      remoteVideoRef.current.srcObject = null;
-    }
+    if (localVideoRef.current) localVideoRef.current.srcObject = null;
+    if (remoteVideoRef.current) remoteVideoRef.current.srcObject = null;
+
     const current = callStateRef.current;
     if (current?.from) socket.emit("call-ended", { to: current.from });
     else if (current?.to) socket.emit("call-ended", { to: current.to });
@@ -171,6 +186,7 @@ function Home() {
 
     socket.on("incoming-call", (data) => {
       iceCandidateQueue.current = [];
+      remoteStreamRef.current = null;
       ringtone.play().catch(() => {});
       vibratePhone();
       showNotification(
@@ -199,7 +215,9 @@ function Home() {
           );
           await drainQueue(peerRef.current);
           setCallState((prev) => ({ ...prev, direction: "active" }));
-        } catch (e) {}
+        } catch (e) {
+          console.error("call-accepted error:", e);
+        }
       }
     });
 
@@ -213,7 +231,9 @@ function Home() {
           await peerRef.current.addIceCandidate(
             new RTCIceCandidate(data.candidate)
           );
-        } catch (e) {}
+        } catch (e) {
+          console.error("ICE candidate error:", e);
+        }
       } else {
         iceCandidateQueue.current.push(data.candidate);
       }
@@ -231,12 +251,14 @@ function Home() {
     };
   }, []);
 
+  // Outgoing call
   const handleStartCall = async (callType, targetUser) => {
     if (!targetUser) return;
     try {
-      const constraints = callType === "video"
-        ? { video: true, audio: true }
-        : { video: false, audio: true };
+      const constraints =
+        callType === "video"
+          ? { video: true, audio: true }
+          : { video: false, audio: true };
 
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
       localStreamRef.current = stream;
@@ -270,10 +292,12 @@ function Home() {
         to: targetUser.id,
       });
     } catch (err) {
+      console.error("handleStartCall error:", err);
       alert("Camera/mic access nahi mila.");
     }
   };
 
+  // Accept incoming call — FIXED ORDER
   const acceptCall = async () => {
     ringtone.pause();
     ringtone.currentTime = 0;
@@ -281,26 +305,34 @@ function Home() {
     if (!callStateRef.current) return;
     const cs = callStateRef.current;
     try {
-      const constraints = cs.type === "video"
-        ? { video: true, audio: true }
-        : { video: false, audio: true };
+      const constraints =
+        cs.type === "video"
+          ? { video: true, audio: true }
+          : { video: false, audio: true };
 
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
       localStreamRef.current = stream;
 
       const peer = createPeer(cs.from);
       peerRef.current = peer;
+
+      // Step 1: Remote description pehle set karo
+      await peer.setRemoteDescription(new RTCSessionDescription(cs.offer));
+
+      // Step 2: Tracks add karo
       stream.getTracks().forEach((track) => peer.addTrack(track, stream));
 
-      await peer.setRemoteDescription(new RTCSessionDescription(cs.offer));
+      // Step 3: ICE queue drain karo
       await drainQueue(peer);
 
+      // Step 4: Answer banao
       const answer = await peer.createAnswer();
       await peer.setLocalDescription(answer);
 
       socket.emit("call-accepted", { to: cs.from, answer });
       setCallState((prev) => ({ ...prev, direction: "active" }));
     } catch (err) {
+      console.error("acceptCall error:", err);
       alert("Camera/mic access nahi mila.");
     }
   };
