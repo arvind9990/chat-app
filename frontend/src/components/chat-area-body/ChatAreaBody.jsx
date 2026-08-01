@@ -56,7 +56,8 @@ function ChatAreaBody() {
         })
       ) : (
         <div className="chat-area-body empty-state">
-          <p>No messages yet</p>
+          <p1>No messages yet!</p1>
+          <p2>Start a conversation!</p2>
         </div>
       )}
       <div ref={bottomRef} />
