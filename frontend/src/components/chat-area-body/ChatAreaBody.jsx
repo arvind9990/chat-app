@@ -43,11 +43,27 @@ function ChatAreaBody() {
           return (
             <div key={message._id || `${message.senderId}-${message.createdAt}`} className={`message ${messageClass}`}>
               {message.type === "image" ? (
-                <img
-                  src={message.message}
-                  alt="sent chat"
-                  style={{ maxWidth: "240px", borderRadius: "12px", marginBottom: "6px" }}
-                />
+                <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                  <img
+                    src={message.message}
+                    alt="sent chat"
+                    style={{ maxWidth: "240px", borderRadius: "12px" }}
+                  />
+                  <a
+                    href={message.message}
+                    download={`chat-image-${message._id || Date.now()}.png`}
+                    target="_blank"
+                    rel="noreferrer"
+                    style={{
+                      fontSize: "12px",
+                      color: "#0b57d0",
+                      textDecoration: "underline",
+                      alignSelf: isSender ? "flex-end" : "flex-start",
+                    }}
+                  >
+                    Download image
+                  </a>
+                </div>
               ) : (
                 <span>{message.message}</span>
               )}

@@ -2,6 +2,23 @@ const User = require("../model/authModel.js");
 const cloudinary = require('../routes/cloudinary.js');
 const bcrypt = require('bcryptjs');
 
+function sanitizeImageSource(file) {
+  if (typeof file !== 'string') return null;
+
+  const trimmedFile = file.trim();
+  if (!trimmedFile) return null;
+
+  if (trimmedFile.startsWith('data:image/')) {
+    return trimmedFile;
+  }
+
+  if (trimmedFile.startsWith('http://') || trimmedFile.startsWith('https://')) {
+    return trimmedFile;
+  }
+
+  return null;
+}
+
 async function createUser(req, res) {
   const data = req.body;
   const file = req.body.file;
@@ -28,15 +45,18 @@ async function createUser(req, res) {
     // Hash password
     const hashedPassword = await bcrypt.hash(data.password, 10);
 
-    let uploadedFile = file;
-    if (file) {
+    let uploadedFile = typeof file === 'string' ? file : '';
+    const validImageSource = sanitizeImageSource(file);
+
+    if (validImageSource) {
       try {
-        const imageData = await cloudinary.uploader.upload(file, {
+        const imageData = await cloudinary.uploader.upload(validImageSource, {
           folder: "chat-app-local",
+          resource_type: "image",
         });
         uploadedFile = imageData.secure_url;
       } catch (uploadError) {
-        console.log("Cloudinary upload failed, using base64 fallback:", uploadError.message);
+        console.log("Cloudinary upload failed, using fallback value:", uploadError.message);
       }
     }
 
