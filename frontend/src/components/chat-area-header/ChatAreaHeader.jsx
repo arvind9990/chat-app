@@ -2,7 +2,7 @@ import { useContext, useState } from "react";
 import startChatContext from "../../context/startChatContext";
 import "./ChatAreaHeader.css";
 
-function ChatAreaHeader({ socket, onStartCall }) {
+function ChatAreaHeader({ onStartCall }) {
   const { startChatUserData } = useContext(startChatContext);
   const [showBigImage, setShowBigImage] = useState(false);
 

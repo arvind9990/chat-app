@@ -21,16 +21,12 @@ function ChatAreaFooter({ socket }) {
         prevAllMessages ? [...prevAllMessages, data] : [data]
       );
     };
-
     socket.on("received-message", handleReceived);
-
-    return () => {
-      socket.off("received-message", handleReceived);
-    };
-  }, []);
+    return () => socket.off("received-message", handleReceived);
+  }, [socket, setAllChats]);
 
   const sendMessage = () => {
-    if (messageRef.current.value === "") {
+    if (!messageRef.current.value.trim()) {
       toast.error("Please Enter the Message", { autoClose: 1500 });
       return;
     }
@@ -60,11 +56,25 @@ function ChatAreaFooter({ socket }) {
   const handleImageChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
+
+    // Fix: File size check
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image size should be less than 5MB", { autoClose: 2000 });
+      return;
+    }
+
+    // Fix: File type check
+    if (!file.type.startsWith("image/")) {
+      toast.error("Only image files allowed", { autoClose: 2000 });
+      return;
+    }
+
     const formData = new FormData();
     formData.append("image", file);
     formData.append("userId1", loggedInUser._id);
     formData.append("userId2", startChatUserData.id);
     formData.append("senderId", loggedInUser._id);
+
     axios
       .post(`${import.meta.env.VITE_BACKEND_URL}/api/chats/send-image`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
@@ -87,7 +97,9 @@ function ChatAreaFooter({ socket }) {
     <div className="chat-area-footer">
       <div className="emoji">
         <EmojiPicker
-          onEmojiClick={(event) => { messageRef.current.value = messageRef.current.value + event.emoji; }}
+          onEmojiClick={(event) => {
+            messageRef.current.value = messageRef.current.value + event.emoji;
+          }}
           open={showEmoji}
           width={800}
           style={{ borderRadius: "12px", boxShadow: "0 8px 24px rgba(0,0,0,0.6)", padding: "8px", margin: "auto" }}
@@ -99,7 +111,13 @@ function ChatAreaFooter({ socket }) {
         placeholder="enter message"
         onKeyDown={(e) => { if (e.key === "Enter") sendMessage(); }}
       />
-      <input type="file" accept="image/*" ref={imageRef} style={{ display: "none" }} onChange={handleImageChange} />
+      <input
+        type="file"
+        accept="image/*"
+        ref={imageRef}
+        style={{ display: "none" }}
+        onChange={handleImageChange}
+      />
       <div className="chat-area-footer-icons">
         <i className="bi bi-image-fill" onClick={() => imageRef.current.click()}></i>
         <i className="bi bi-emoji-heart-eyes-fill" onClick={() => setShowEmoji(!showEmoji)}></i>

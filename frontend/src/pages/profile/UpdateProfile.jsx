@@ -27,7 +27,7 @@ function UpdateProfile() {
           throw Error();
         }
       })
-      .catch((error) => {
+      .catch(() => {
         toast.error("Failed to Update", { autoClose: 2000 });
       });
   };

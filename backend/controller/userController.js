@@ -1,32 +1,28 @@
 const User = require("../model/authModel");
 const Chat = require("../model/chatModel");
 
-function getAllUsers(req, res) {
+async function getAllUsers(req, res) {
   const loggedInUserId = req.params.id;
-  User.findById(loggedInUserId)
-    .then((loggedInUser) => {
-      const blockedList = loggedInUser?.blockedUsers || [];
-      return User.find({
-        _id: { $ne: loggedInUserId, $nin: blockedList },
-      });
-    })
-    .then((users) => {
-      res.json({ ok: true, result: users });
-    })
-    .catch((error) => {
-      console.log(error);
-      res.json({ ok: false, error: "Failed to Access All Users Data" });
+  try {
+    const loggedInUser = await User.findById(loggedInUserId);
+    if (!loggedInUser) {
+      return res.json({ ok: false, error: "User not found" });
+    }
+    const blockedList = loggedInUser.blockedUsers || [];
+    const users = await User.find({
+      _id: { $ne: loggedInUserId, $nin: blockedList },
     });
+    res.json({ ok: true, result: users });
+  } catch (error) {
+    console.log(error);
+    res.json({ ok: false, error: "Failed to Access All Users Data" });
+  }
 }
 
 function updateUser(req, res) {
   User.updateOne({ _id: req.params.id }, { $set: req.body })
-    .then(() => {
-      res.send({ ok: true, result: "user-updated" });
-    })
-    .catch((error) => {
-      res.send({ ok: false, error: "failed to update data" });
-    });
+    .then(() => res.send({ ok: true, result: "user-updated" }))
+    .catch(() => res.send({ ok: false, error: "failed to update data" }));
 }
 
 async function deleteUser(req, res) {

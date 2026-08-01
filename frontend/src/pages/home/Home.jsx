@@ -1,5 +1,5 @@
 import "./Home.css";
-import { useEffect, useContext, useState, useRef } from "react";
+import { useCallback, useEffect, useContext, useState, useRef } from "react";
 import ChatHeader from "../../components/chat-header/ChatHeader";
 import ChatMain from "../../components/chat-main/ChatMain";
 import CallModal from "../../components/call-modal/CallModal";
@@ -7,6 +7,7 @@ import { io } from "socket.io-client";
 import loggedInUserContext from "../../context/loggedInUserContext";
 import onlineUsersContext from "../../context/OnlineUsersContext";
 
+const OnlineUsersContext = onlineUsersContext;
 const socket = io(import.meta.env.VITE_BACKEND_URL);
 
 const ringtone = new Audio("https://res.cloudinary.com/dzfqys9wk/video/upload/WhatsApp_Audio_2026-05-11_at_7.50.08_AM_bmzszh.mp3");
@@ -50,7 +51,9 @@ function Home() {
       if ("serviceWorker" in navigator) {
         try {
           await navigator.serviceWorker.register("/sw.js");
-        } catch (e) {}
+        } catch (error) {
+          console.error("Service worker registration failed:", error);
+        }
       }
       if (Notification.permission !== "granted") {
         await Notification.requestPermission();
@@ -59,7 +62,7 @@ function Home() {
     setup();
   }, []);
 
-  const showNotification = (title, body, icon) => {
+  const showNotification = useCallback((title, body, icon) => {
     if (Notification.permission === "granted") {
       navigator.serviceWorker.ready
         .then((reg) => {
@@ -74,15 +77,15 @@ function Home() {
           new Notification(title, { body, icon: icon || "/vite.svg" });
         });
     }
-  };
+  }, []);
 
-  const vibratePhone = () => {
+  const vibratePhone = useCallback(() => {
     if (navigator.vibrate) navigator.vibrate([500, 300, 500, 300, 500]);
-  };
+  }, []);
 
-  const stopVibrate = () => {
+  const stopVibrate = useCallback(() => {
     if (navigator.vibrate) navigator.vibrate(0);
-  };
+  }, []);
 
   const createPeer = (targetId) => {
     const peer = new RTCPeerConnection({
@@ -141,7 +144,7 @@ function Home() {
     }
   };
 
-  const endCall = () => {
+  const endCall = useCallback(() => {
     ringtone.pause();
     ringtone.currentTime = 0;
     stopVibrate();
@@ -166,9 +169,11 @@ function Home() {
     else if (current?.to) socket.emit("call-ended", { to: current.to });
     iceCandidateQueue.current = [];
     setCallState(null);
-  };
+  }, [stopVibrate]);
 
-  endCallRef.current = endCall;
+  useEffect(() => {
+    endCallRef.current = endCall;
+  }, [endCall]);
 
   useEffect(() => {
     socket.emit("join-room", loggedInUser._id);
@@ -249,7 +254,7 @@ function Home() {
       socket.off("call-ended");
       socket.off("ice-candidate");
     };
-  }, []);
+  }, [loggedInUser?._id, showNotification, socket, stopVibrate, vibratePhone]);
 
   // Outgoing call
   const handleStartCall = async (callType, targetUser) => {
@@ -348,9 +353,9 @@ function Home() {
   return (
     <div className="home">
       <ChatHeader socket={socket} />
-      <onlineUsersContext.Provider value={{ onlineusers, setOnlineUsers }}>
+      <OnlineUsersContext.Provider value={{ onlineusers, setOnlineUsers }}>
         <ChatMain socket={socket} onStartCall={handleStartCall} />
-      </onlineUsersContext.Provider>
+      </OnlineUsersContext.Provider>
 
       {callState && (
         <CallModal

@@ -43,10 +43,6 @@ function ChatListUser({ username, email, file, id, index, selectChatListComp, se
   const handleDelete = (e) => {
     e.stopPropagation();
 
-    console.log("loggedInUser:", loggedInUser);
-    console.log("loggedInUser._id:", loggedInUser?._id);
-    console.log("targetId:", id);
-
     const lId = loggedInUser?._id;
     const tId = id;
 
@@ -54,8 +50,6 @@ function ChatListUser({ username, email, file, id, index, selectChatListComp, se
       toast.error("Login session expired — please login again");
       return;
     }
-
-    console.log("Final URL:", `${import.meta.env.VITE_BACKEND_URL}/api/users/delete-user/${lId}/${tId}`);
 
     axios
       .delete(`${import.meta.env.VITE_BACKEND_URL}/api/users/delete-user/${lId}/${tId}`)
@@ -68,7 +62,7 @@ function ChatListUser({ username, email, file, id, index, selectChatListComp, se
         }
       })
       .catch((error) => {
-        toast.error(error.message, { autoClose: 1500 });
+        toast.error(error.message || "Failed to remove user", { autoClose: 1500 });
       })
       .finally(() => {
         setConfirmDelete(false);

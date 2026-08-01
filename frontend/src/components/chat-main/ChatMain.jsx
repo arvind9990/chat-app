@@ -5,6 +5,9 @@ import ChatArea from "../chat-area/ChatArea.jsx";
 import allChatContext from "../../context/allChatContext.js";
 import startChatContext from "../../context/startChatContext.js";
 
+const AllChatContext = allChatContext;
+const StartChatContext = startChatContext;
+
 function ChatMain({ socket, onStartCall }) {
   const [startChatUserData, setStartChatUserData] = useState(null);
   const [allChats, setAllChats] = useState(null);
@@ -30,8 +33,8 @@ function ChatMain({ socket, onStartCall }) {
   };
 
   return (
-    <allChatContext.Provider value={{ allChats, setAllChats }}>
-      <startChatContext.Provider
+    <AllChatContext.Provider value={{ allChats, setAllChats }}>
+      <StartChatContext.Provider
         value={{
           startChatUserData,
           setStartChatUserData: handleSetStartChat,
@@ -50,8 +53,8 @@ function ChatMain({ socket, onStartCall }) {
             <ChatArea socket={socket} onStartCall={handleStartCall} />
           </div>
         </div>
-      </startChatContext.Provider>
-    </allChatContext.Provider>
+      </StartChatContext.Provider>
+    </AllChatContext.Provider>
   );
 }
 

@@ -1,17 +1,41 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
 import "./Signup.css";
 import { Link, useNavigate } from "react-router-dom";
 import { signup } from "./Signup";
 
 function Signup() {
-  let [submitted, setSubmitted] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [form, setForm] = useState({
+    username: "",
+    email: "",
+    password: "",
+    city: "",
+    gender: "male",
+    file: null,
+  });
   const navigate = useNavigate();
-  let userNameRef = useRef(null);
-  let passwordRef = useRef(null);
-  let emailRef = useRef(null);
-  let genderRef = useRef(null);
-  let cityRef = useRef(null);
-  let fileRef = useRef(null);
+
+  const handleChange = (field, value) => {
+    setForm((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const errors = {
+    username: submitted && !form.username.trim() ? "Username is required" : "",
+    email:
+      submitted && !form.email.trim()
+        ? "Email is required"
+        : submitted && !form.email.endsWith("@gmail.com")
+          ? "Only Gmail allowed (@gmail.com)"
+          : "",
+    password: submitted && !form.password ? "Password is required" : "",
+    city: submitted && !form.city.trim() ? "City is required" : "",
+    file: submitted && !form.file ? "Profile photo is required" : "",
+  };
+
+  const handleSubmit = () => {
+    setSubmitted(true);
+    signup(form, navigate);
+  };
 
   return (
     <div className="signup-container">
@@ -19,45 +43,47 @@ function Signup() {
         <h2>Sign Up</h2>
 
         <div>
-          <input type="text" placeholder="Username" ref={userNameRef} />
-          <span style={{ color: "red", fontSize: "12px" }}>
-            {submitted && userNameRef.current?.value === ""
-              ? "Username is required"
-              : null}
-          </span>
+          <input
+            type="text"
+            placeholder="Username"
+            value={form.username}
+            onChange={(e) => handleChange("username", e.target.value)}
+          />
+          {errors.username && <span style={{ color: "red", fontSize: "12px" }}>{errors.username}</span>}
         </div>
 
         <div>
-          <input type="email" ref={emailRef} placeholder="Email Id (@gmail.com only)" />
-          <span style={{ color: "red", fontSize: "12px" }}>
-            {submitted && emailRef.current?.value === ""
-              ? "Email is required"
-              : submitted && !emailRef.current?.value.endsWith("@gmail.com")
-              ? "Only Gmail allowed (@gmail.com)"
-              : null}
-          </span>
+          <input
+            type="email"
+            placeholder="Email Id "
+            value={form.email}
+            onChange={(e) => handleChange("email", e.target.value)}
+          />
+          {errors.email && <span style={{ color: "red", fontSize: "12px" }}>{errors.email}</span>}
         </div>
 
         <div>
-          <input type="password" ref={passwordRef} placeholder="Password" />
-          <span style={{ color: "red", fontSize: "12px" }}>
-            {submitted && passwordRef.current?.value === ""
-              ? "Password is required"
-              : null}
-          </span>
+          <input
+            type="password"
+            placeholder="Password"
+            value={form.password}
+            onChange={(e) => handleChange("password", e.target.value)}
+          />
+          {errors.password && <span style={{ color: "red", fontSize: "12px" }}>{errors.password}</span>}
         </div>
 
         <div>
-          <input type="text" ref={cityRef} placeholder="City" />
-          <span style={{ color: "red", fontSize: "12px" }}>
-            {submitted && cityRef.current?.value === ""
-              ? "City is required"
-              : null}
-          </span>
+          <input
+            type="text"
+            placeholder="City"
+            value={form.city}
+            onChange={(e) => handleChange("city", e.target.value)}
+          />
+          {errors.city && <span style={{ color: "red", fontSize: "12px" }}>{errors.city}</span>}
         </div>
 
         <div>
-          <select id="gender" ref={genderRef}>
+          <select id="gender" value={form.gender} onChange={(e) => handleChange("gender", e.target.value)}>
             <option value="male">male</option>
             <option value="female">female</option>
             <option value="other">other</option>
@@ -65,30 +91,16 @@ function Signup() {
         </div>
 
         <div>
-          <input type="file" ref={fileRef} accept="image/*" />
-          <span style={{ color: "red", fontSize: "12px" }}>
-            {submitted && fileRef.current?.files.length === 0
-              ? "Profile photo is required"
-              : null}
-          </span>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) => handleChange("file", e.target.files[0])}
+          />
+          {errors.file && <span style={{ color: "red", fontSize: "12px" }}>{errors.file}</span>}
         </div>
 
         <div style={{ textAlign: "center" }}>
-          <button
-            type="button"
-            onClick={() => {
-              setSubmitted(true);
-              signup(
-                userNameRef,
-                passwordRef,
-                emailRef,
-                cityRef,
-                genderRef,
-                navigate,
-                fileRef,
-              );
-            }}
-          >
+          <button type="button" onClick={handleSubmit}>
             Sign Up
           </button>
         </div>

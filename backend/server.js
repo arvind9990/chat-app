@@ -1,39 +1,57 @@
 require("dotenv").config();
-
 const express = require("express");
 const cors = require("cors");
 const { createServer } = require("http");
 const { Server } = require("socket.io");
-
 const createMongodbConnection = require("./config/mongodbConnection");
-
 const AuthRoute = require("./routes/authRoute");
 const UserRoute = require("./routes/userRoute");
 const ChatRoute = require("./routes/chatRoute");
 
 const app = express();
 
-app.use(
-  cors({
-    origin: "https://chat-app-1-cz6u.onrender.com",
-    methods: ["GET", "POST", "PUT", "DELETE"],
-  })
-);
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  "https://chat-app-1-cz6u.onrender.com",
+  "http://localhost:5173",
+  "http://127.0.0.1:5173",
+  "http://localhost:3000",
+  "http://127.0.0.1:3000",
+].filter(Boolean);
+
+const corsOptions = {
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error(`Origin ${origin} not allowed by CORS`));
+    }
+  },
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
 
 app.use(express.json({ limit: "50mb" }));
-
 app.use("/api/auth", AuthRoute);
 app.use("/api/users", UserRoute);
 app.use("/api/chats", ChatRoute);
 
 const onlineUsers = [];
-
 const server = createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: "https://chat-app-1-cz6u.onrender.com",
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error(`Origin ${origin} not allowed by Socket.IO CORS`));
+      }
+    },
     methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
   },
 });
 
@@ -41,6 +59,7 @@ io.on("connection", (socket) => {
   console.log("User Connected");
 
   socket.on("join-room", (userId) => {
+    socket.userId = userId;
     if (!onlineUsers.includes(userId)) {
       onlineUsers.push(userId);
     }
@@ -49,8 +68,18 @@ io.on("connection", (socket) => {
   });
 
   socket.on("offline", (id) => {
-    const filteredIds = onlineUsers.filter((userId) => userId != id);
-    io.emit("offline", filteredIds);
+    const index = onlineUsers.indexOf(id);
+    if (index > -1) onlineUsers.splice(index, 1);
+    io.emit("offline", onlineUsers);
+  });
+
+  // Fix: disconnect pe bhi remove karo
+  socket.on("disconnect", () => {
+    if (socket.userId) {
+      const index = onlineUsers.indexOf(socket.userId);
+      if (index > -1) onlineUsers.splice(index, 1);
+      io.emit("offline", onlineUsers);
+    }
   });
 
   socket.on("send-message", (data) => {
@@ -74,8 +103,12 @@ io.on("connection", (socket) => {
     io.to(data.to).emit("call-accepted", data);
   });
 
-  socket.on("call-rejected", () => {
-    io.emit("call-rejected");
+  socket.on("call-rejected", (data) => {
+    if (data?.to) {
+      io.to(data.to).emit("call-rejected");
+    } else {
+      io.emit("call-rejected");
+    }
   });
 
   socket.on("call-ended", (data) => {
@@ -88,7 +121,6 @@ io.on("connection", (socket) => {
 });
 
 const PORT = process.env.PORT || 5000;
-
 createMongodbConnection()
   .then(() => {
     server.listen(PORT, () => {

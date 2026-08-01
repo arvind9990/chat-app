@@ -11,32 +11,31 @@ function ChatAside({ socket }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedChatListComp, setSelectedChatListComp] = useState(null);
   const { loggedInUser } = useContext(loggedInUserContext);
-  const { onlineusers } = useContext(onlineUsersContext);
+  useContext(onlineUsersContext);
 
   useEffect(() => {
+    if (!loggedInUser?._id) return;
     getAllUsers(loggedInUser._id, setAllUsers);
-  }, []);
+  }, [loggedInUser?._id]);
 
   useEffect(() => {
-    if (!socket) return;
+    if (!socket || !loggedInUser?._id) return;
 
-    socket.on("received-message", (data) => {
+    // Fix: Named handler to prevent memory leak
+    const handleReceivedMessage = (data) => {
       const senderId = data.userIds.find((id) => id !== loggedInUser._id);
-
       setAllUsers((prevUsers) => {
         const senderIndex = prevUsers.findIndex((u) => u._id === senderId);
         if (senderIndex === -1) return prevUsers;
-
         const updatedUsers = [...prevUsers];
         const [senderUser] = updatedUsers.splice(senderIndex, 1);
         return [senderUser, ...updatedUsers];
       });
-    });
-
-    return () => {
-      socket.off("received-message");
     };
-  }, [socket]);
+
+    socket.on("received-message", handleReceivedMessage);
+    return () => socket.off("received-message", handleReceivedMessage);
+  }, [socket, loggedInUser?._id]);
 
   const handleUserDeleted = (deletedId) => {
     setAllUsers((prev) => prev.filter((u) => u._id !== deletedId));
@@ -68,7 +67,6 @@ function ChatAside({ socket }) {
               />
             );
           })}
-
         {filteredUsers.length === 0 && searchQuery !== "" && (
           <p style={{ textAlign: "center", color: "gray", marginTop: "20px" }}>
             No user found
